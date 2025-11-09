@@ -1,751 +1,533 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, LogOut, Plus, Save, BarChart3, Trash2, Edit2, FileText, X, UserPlus, Users } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haltes Musicales - Plateforme Professionnels</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
 
-const USERS = [
-  { email: 'prof1@haltes-musicales.fr', password: 'HM2024prof1', name: 'Professionnel 1', id: 'prof1' },
-  { email: 'prof2@haltes-musicales.fr', password: 'HM2024prof2', name: 'Professionnel 2', id: 'prof2' },
-  { email: 'prof3@haltes-musicales.fr', password: 'HM2024prof3', name: 'Professionnel 3', id: 'prof3' },
-  { email: 'prof4@haltes-musicales.fr', password: 'HM2024prof4', name: 'Professionnel 4', id: 'prof4' },
-  { email: 'prof5@haltes-musicales.fr', password: 'HM2024prof5', name: 'Professionnel 5', id: 'prof5' }
-];
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-const EVALUATION_STRUCTURE = {
-  interactionsSociales: {
-    title: "INTERACTIONS SOCIALES",
-    items: [
-      { key: "interaction", label: "Interaction Sociale (échanges entre résidents et/ou soignants)", moments: [1,2,3,4,5] },
-      { key: "reactionEmotionnelle", label: "Réaction émotionnelle positive (Expression faciale, Gestes)", moments: [1,2,3,4,5] }
-    ]
-  },
-  communicationVerbale: {
-    title: "COMMUNICATION VERBALE",
-    items: [
-      { key: "commMusiciens", label: "Communication avec les musiciens", moments: [2,3] },
-      { key: "commResidents", label: "Communication avec les autres résidents", moments: [2,3] }
-    ]
-  },
-  stimulationSensorielle: {
-    title: "STIMULATION MULTISENSORIELLE",
-    items: [
-      { key: "reactionAuditive", label: "Réaction auditive (réceptivité à la musique)", moments: [3] },
-      { key: "reactionVisuelle", label: "Réaction visuelle (réceptivité aux éléments visuels)", moments: [3] },
-      { key: "reactionKinesth", label: "Réaction kinesthésique (mouvement, danse)", moments: [3] },
-      { key: "receptiviteTactile", label: "Réceptivité tactile (interaction avec objets/personnes)", moments: [3] }
-    ]
-  },
-  memoire: {
-    title: "MÉMOIRE / SOUVENIRS",
-    items: [
-      { key: "reactivationSouvenirs", label: "Réactivation de souvenirs", moments: [3] },
-      { key: "reconnaissanceMusique", label: "Reconnaissance de la musique", moments: [3] },
-      { key: "verbalisationSouvenirs", label: "Niveau de verbalisation des souvenirs", moments: [3] }
-    ]
-  },
-  comportements: {
-    title: "COMPORTEMENTS",
-    items: [
-      { key: "agitation", label: "Agitation/Agressivité", moments: [1,2,3,4,5] },
-      { key: "ideesDelirantes", label: "Idées délirantes", moments: [1,2,3,4,5] },
-      { key: "hallucinations", label: "Hallucinations", moments: [1,2,3,4,5] },
-      { key: "depression", label: "Dépression/Dysphorie", moments: [1,2,3,4,5] },
-      { key: "anxiete", label: "Anxiété", moments: [1,2,3,4,5] },
-      { key: "euphorie", label: "Exaltation de l'humeur / Euphorie", moments: [1,2,3,4,5] },
-      { key: "apathie", label: "Apathie / Indifférence", moments: [1,2,3,4,5] },
-      { key: "desinhibition", label: "Désinhibition", moments: [1,2,3,4,5] },
-      { key: "irritabilite", label: "Irritabilité / Instabilité de l'humeur", moments: [1,2,3,4,5] },
-      { key: "moteurAberrant", label: "Comportement moteur aberrant", moments: [1,2,3,4,5] }
-    ]
-  },
-  effetsGlobaux: {
-    title: "EFFETS GLOBAUX",
-    items: [
-      { key: "reveilCognitif", label: "Réveil cognitif", moments: [3,4,5] },
-      { key: "ameliorationInteraction", label: "Amélioration de l'interaction sociale", moments: [3,4,5] },
-      { key: "reductionAnxiete", label: "Réduction de l'anxiété si présente", moments: [3,4,5] },
-      { key: "reductionDepression", label: "Réduction de la dépression si présente", moments: [3,4,5] }
-    ]
-  }
-};
+        const USERS = [
+          { email: 'prof1@haltes-musicales.fr', password: 'HM2024prof1', name: 'Professionnel 1', id: 'prof1' },
+          { email: 'prof2@haltes-musicales.fr', password: 'HM2024prof2', name: 'Professionnel 2', id: 'prof2' },
+          { email: 'prof3@haltes-musicales.fr', password: 'HM2024prof3', name: 'Professionnel 3', id: 'prof3' },
+          { email: 'prof4@haltes-musicales.fr', password: 'HM2024prof4', name: 'Professionnel 4', id: 'prof4' },
+          { email: 'prof5@haltes-musicales.fr', password: 'HM2024prof5', name: 'Professionnel 5', id: 'prof5' }
+        ];
 
-const MOMENT_LABELS = {
-  1: "Habituellement",
-  2: "Avant",
-  3: "Pendant",
-  4: "Après",
-  5: "Suivi"
-};
+        const EVALUATION_STRUCTURE = {
+          interactionsSociales: {
+            title: "INTERACTIONS SOCIALES",
+            items: [
+              { key: "interaction", label: "Interaction Sociale (échanges entre résidents et/ou soignants)", moments: [1,2,3,4,5] },
+              { key: "reactionEmotionnelle", label: "Réaction émotionnelle positive (Expression faciale, Gestes)", moments: [1,2,3,4,5] }
+            ]
+          },
+          communicationVerbale: {
+            title: "COMMUNICATION VERBALE",
+            items: [
+              { key: "commMusiciens", label: "Communication avec les musiciens", moments: [2,3] },
+              { key: "commResidents", label: "Communication avec les autres résidents", moments: [2,3] }
+            ]
+          },
+          stimulationSensorielle: {
+            title: "STIMULATION MULTISENSORIELLE",
+            items: [
+              { key: "reactionAuditive", label: "Réaction auditive (réceptivité à la musique)", moments: [3] },
+              { key: "reactionVisuelle", label: "Réaction visuelle (réceptivité aux éléments visuels)", moments: [3] },
+              { key: "reactionKinesth", label: "Réaction kinesthésique (mouvement, danse)", moments: [3] },
+              { key: "receptiviteTactile", label: "Réceptivité tactile (interaction avec objets/personnes)", moments: [3] }
+            ]
+          },
+          memoire: {
+            title: "MÉMOIRE / SOUVENIRS",
+            items: [
+              { key: "reactivationSouvenirs", label: "Réactivation de souvenirs", moments: [3] },
+              { key: "reconnaissanceMusique", label: "Reconnaissance de la musique", moments: [3] },
+              { key: "verbalisationSouvenirs", label: "Niveau de verbalisation des souvenirs", moments: [3] }
+            ]
+          },
+          comportements: {
+            title: "COMPORTEMENTS",
+            items: [
+              { key: "agitation", label: "Agitation/Agressivité", moments: [1,2,3,4,5] },
+              { key: "ideesDelirantes", label: "Idées délirantes", moments: [1,2,3,4,5] },
+              { key: "hallucinations", label: "Hallucinations", moments: [1,2,3,4,5] },
+              { key: "depression", label: "Dépression/Dysphorie", moments: [1,2,3,4,5] },
+              { key: "anxiete", label: "Anxiété", moments: [1,2,3,4,5] },
+              { key: "euphorie", label: "Exaltation de l'humeur / Euphorie", moments: [1,2,3,4,5] },
+              { key: "apathie", label: "Apathie / Indifférence", moments: [1,2,3,4,5] },
+              { key: "desinhibition", label: "Désinhibition", moments: [1,2,3,4,5] },
+              { key: "irritabilite", label: "Irritabilité / Instabilité de l'humeur", moments: [1,2,3,4,5] },
+              { key: "moteurAberrant", label: "Comportement moteur aberrant", moments: [1,2,3,4,5] }
+            ]
+          },
+          effetsGlobaux: {
+            title: "EFFETS GLOBAUX",
+            items: [
+              { key: "reveilCognitif", label: "Réveil cognitif", moments: [3,4,5] },
+              { key: "ameliorationInteraction", label: "Amélioration de l'interaction sociale", moments: [3,4,5] },
+              { key: "reductionAnxiete", label: "Réduction de l'anxiété si présente", moments: [3,4,5] },
+              { key: "reductionDepression", label: "Réduction de la dépression si présente", moments: [3,4,5] }
+            ]
+          }
+        };
 
-function createEmptyEvaluation() {
-  return {
-    id: Date.now().toString() + Math.random(),
-    beneficiaire: { nom: '', prenom: '', dateNaissance: '', age: '', sexe: 'Féminin' },
-    pathologies: '',
-    souhaitsMusicaux: '',
-    objectifs: '',
-    evaluations: {},
-    commentaires: {},
-    compteRenduHM: '',
-    compteRenduEtablissement: ''
-  };
-}
+        const MOMENT_LABELS = { 1: "Habituellement", 2: "Avant", 3: "Pendant", 4: "Après", 5: "Suivi" };
 
-export default function HaltesMusicalesApp() {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loginError, setLoginError] = useState('');
-  const [interventions, setInterventions] = useState({});
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [notification, setNotification] = useState(null);
-  const [newIntervention, setNewIntervention] = useState({
-    date: '', time: '', lieu: '', notes: ''
-  });
+        function createEmptyEvaluation() {
+          return {
+            id: Date.now().toString() + Math.random(),
+            beneficiaire: { nom: '', prenom: '', dateNaissance: '', age: '', sexe: 'Féminin' },
+            pathologies: '', souhaitsMusicaux: '', objectifs: '',
+            evaluations: {}, commentaires: {},
+            compteRenduHM: '', compteRenduEtablissement: ''
+          };
+        }
 
-  useEffect(() => {
-    if (currentUser) loadUserData();
-  }, [currentUser]);
+        function App() {
+          const [currentUser, setCurrentUser] = useState(null);
+          const [email, setEmail] = useState('');
+          const [password, setPassword] = useState('');
+          const [loginError, setLoginError] = useState('');
+          const [interventions, setInterventions] = useState({});
+          const [showAddModal, setShowAddModal] = useState(false);
+          const [notification, setNotification] = useState(null);
+          const [newIntervention, setNewIntervention] = useState({ date: '', time: '', lieu: '', notes: '' });
 
-  const showNotif = (msg, type = 'success') => {
-    setNotification({ msg, type });
-    setTimeout(() => setNotification(null), 3000);
-  };
+          useEffect(() => { if (currentUser) loadUserData(); }, [currentUser]);
 
-  const loadUserData = async () => {
-    try {
-      const data = await window.storage.get(`interventions_${currentUser.id}`);
-      if (data) setInterventions(JSON.parse(data.value));
-    } catch (e) {
-      setInterventions({});
-    }
-  };
+          const showNotif = (msg, type = 'success') => {
+            setNotification({ msg, type });
+            setTimeout(() => setNotification(null), 3000);
+          };
 
-  const saveInterventions = async (data) => {
-    try {
-      await window.storage.set(`interventions_${currentUser.id}`, JSON.stringify(data));
-    } catch (e) {
-      console.error('Erreur sauvegarde:', e);
-    }
-  };
+          const loadUserData = () => {
+            try {
+              const data = localStorage.getItem(`interventions_${currentUser.id}`);
+              if (data) setInterventions(JSON.parse(data));
+            } catch (e) { setInterventions({}); }
+          };
 
-  const handleLogin = () => {
-    const user = USERS.find(u => 
-      u.email.toLowerCase() === email.trim().toLowerCase() && 
-      u.password === password.trim()
-    );
-    if (user) {
-      setCurrentUser(user);
-      showNotif(`Bienvenue ${user.name} !`);
-    } else {
-      setLoginError('Identifiant incorrect');
-    }
-  };
+          const saveInterventions = (data) => {
+            localStorage.setItem(`interventions_${currentUser.id}`, JSON.stringify(data));
+          };
 
-  const handleQuickLogin = (user) => {
-    setCurrentUser(user);
-    showNotif(`Bienvenue ${user.name} !`);
-  };
+          const handleLogin = () => {
+            const user = USERS.find(u => u.email.toLowerCase() === email.trim().toLowerCase() && u.password === password.trim());
+            if (user) { setCurrentUser(user); showNotif(`Bienvenue ${user.name} !`); }
+            else { setLoginError('Identifiant incorrect'); }
+          };
 
-  const handleAddIntervention = async () => {
-    if (!newIntervention.date || !newIntervention.time || !newIntervention.lieu) {
-      showNotif('Remplissez date, heure et lieu', 'error');
-      return;
-    }
+          const handleQuickLogin = (user) => { setCurrentUser(user); showNotif(`Bienvenue ${user.name} !`); };
 
-    const id = Date.now().toString();
-    const updated = {
-      ...interventions,
-      [id]: { 
-        ...newIntervention, 
-        id, 
-        createdAt: new Date().toISOString(),
-        beneficiaires: []
-      }
-    };
-    
-    setInterventions(updated);
-    await saveInterventions(updated);
-    setShowAddModal(false);
-    setNewIntervention({ date: '', time: '', lieu: '', notes: '' });
-    showNotif('Intervention créée !');
-  };
+          const handleAddIntervention = () => {
+            if (!newIntervention.date || !newIntervention.time || !newIntervention.lieu) {
+              showNotif('Remplissez tous les champs obligatoires', 'error');
+              return;
+            }
+            const id = Date.now().toString();
+            const updated = { ...interventions, [id]: { ...newIntervention, id, createdAt: new Date().toISOString(), beneficiaires: [] }};
+            setInterventions(updated);
+            saveInterventions(updated);
+            setShowAddModal(false);
+            setNewIntervention({ date: '', time: '', lieu: '', notes: '' });
+            showNotif('Intervention créée !');
+          };
 
-  const handleDeleteIntervention = async (id) => {
-    if (!confirm('Supprimer cette intervention et toutes ses évaluations ?')) return;
-    const updated = { ...interventions };
-    delete updated[id];
-    setInterventions(updated);
-    await saveInterventions(updated);
-    showNotif('Intervention supprimée');
-  };
+          const handleDeleteIntervention = (id) => {
+            if (!confirm('Supprimer ?')) return;
+            const updated = { ...interventions };
+            delete updated[id];
+            setInterventions(updated);
+            saveInterventions(updated);
+            showNotif('Supprimée');
+          };
 
-  const addBeneficiaire = async (interventionId) => {
-    const intervention = interventions[interventionId];
-    const newBenef = createEmptyEvaluation();
-    const updated = {
-      ...interventions,
-      [interventionId]: {
-        ...intervention,
-        beneficiaires: [...(intervention.beneficiaires || []), newBenef]
-      }
-    };
-    setInterventions(updated);
-    await saveInterventions(updated);
-    showNotif('Nouveau bénéficiaire ajouté !');
-  };
+          const addBeneficiaire = (interventionId) => {
+            const intervention = interventions[interventionId];
+            const updated = {
+              ...interventions,
+              [interventionId]: { ...intervention, beneficiaires: [...(intervention.beneficiaires || []), createEmptyEvaluation()] }
+            };
+            setInterventions(updated);
+            saveInterventions(updated);
+            showNotif('Bénéficiaire ajouté !');
+          };
 
-  const deleteBeneficiaire = async (interventionId, benefId) => {
-    if (!confirm('Supprimer ce bénéficiaire et son évaluation ?')) return;
-    const intervention = interventions[interventionId];
-    const updated = {
-      ...interventions,
-      [interventionId]: {
-        ...intervention,
-        beneficiaires: intervention.beneficiaires.filter(b => b.id !== benefId)
-      }
-    };
-    setInterventions(updated);
-    await saveInterventions(updated);
-    showNotif('Bénéficiaire supprimé');
-  };
+          const deleteBeneficiaire = (interventionId, benefId) => {
+            if (!confirm('Supprimer ?')) return;
+            const intervention = interventions[interventionId];
+            const updated = {
+              ...interventions,
+              [interventionId]: { ...intervention, beneficiaires: intervention.beneficiaires.filter(b => b.id !== benefId) }
+            };
+            setInterventions(updated);
+            saveInterventions(updated);
+            showNotif('Supprimé');
+          };
 
-  const updateBeneficiaire = async (interventionId, benefId, evalData) => {
-    const intervention = interventions[interventionId];
-    const updated = {
-      ...interventions,
-      [interventionId]: {
-        ...intervention,
-        beneficiaires: intervention.beneficiaires.map(b => 
-          b.id === benefId ? evalData : b
-        )
-      }
-    };
-    setInterventions(updated);
-    await saveInterventions(updated);
-  };
+          const updateBeneficiaire = (interventionId, benefId, evalData) => {
+            const intervention = interventions[interventionId];
+            const updated = {
+              ...interventions,
+              [interventionId]: { ...intervention, beneficiaires: intervention.beneficiaires.map(b => b.id === benefId ? evalData : b) }
+            };
+            setInterventions(updated);
+            saveInterventions(updated);
+          };
 
-  if (!currentUser) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-4xl">🎵</div>
-            <h1 className="text-3xl font-bold text-purple-900 mb-2">Haltes Musicales</h1>
-            <p className="text-gray-600">Plateforme Professionnels</p>
-          </div>
-          
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-              <input
-                type="text"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
-              />
-            </div>
-
-            {loginError && (
-              <div className="bg-red-50 text-red-700 px-4 py-3 rounded-lg text-sm">{loginError}</div>
-            )}
-
-            <button
-              onClick={handleLogin}
-              className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition shadow-lg"
-            >
-              Se connecter
-            </button>
-          </div>
-
-          <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
-            <p className="font-semibold text-sm text-center mb-4">Connexion rapide :</p>
-            <div className="space-y-2">
-              {USERS.map((user) => (
-                <button
-                  key={user.id}
-                  onClick={() => handleQuickLogin(user)}
-                  className="w-full px-4 py-3 bg-white hover:bg-purple-50 rounded-lg text-sm font-medium transition flex items-center gap-3"
-                >
-                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold">
-                    {user.id.replace('prof', '')}
+          if (!currentUser) {
+            return (
+              <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+                  <div className="text-center mb-8">
+                    <div className="w-20 h-20 bg-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                      <span className="text-white text-4xl">🎵</span>
+                    </div>
+                    <h1 className="text-3xl font-bold text-purple-900 mb-2">Haltes Musicales</h1>
+                    <p className="text-gray-600">Plateforme Professionnels</p>
                   </div>
-                  <span>{user.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                      <input type="text" value={email} onChange={(e) => setEmail(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"/>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+                      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"/>
+                    </div>
+                    {loginError && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{loginError}</div>}
+                    <button onClick={handleLogin} className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition shadow-lg hover:shadow-xl">
+                      Se connecter
+                    </button>
+                  </div>
 
-  const interventionsList = Object.values(interventions).sort((a, b) => 
-    new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time)
-  );
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {notification && (
-        <div className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white ${
-          notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'
-        }`}>
-          {notification.msg}
-        </div>
-      )}
-
-      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white text-2xl">🎵</div>
-            <div>
-              <h1 className="text-2xl font-bold text-purple-900">Haltes Musicales</h1>
-              <p className="text-sm text-gray-600">{currentUser.name}</p>
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              setCurrentUser(null);
-              setInterventions({});
-            }}
-            className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-          >
-            <LogOut size={20} />
-            Déconnexion
-          </button>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Mes Interventions ({interventionsList.length})</h2>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-lg"
-          >
-            <Plus size={20} />
-            Nouvelle intervention
-          </button>
-        </div>
-
-        <div className="space-y-6">
-          {interventionsList.length === 0 ? (
-            <div className="bg-white rounded-xl p-12 text-center shadow">
-              <div className="text-6xl mb-4">📅</div>
-              <h3 className="text-xl font-semibold mb-2">Aucune intervention</h3>
-              <p className="text-gray-500 mb-6">Créez votre première intervention</p>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-              >
-                <Plus className="inline mr-2" size={20} />
-                Créer une intervention
-              </button>
-            </div>
-          ) : (
-            interventionsList.map(intervention => (
-              <InterventionCard
-                key={intervention.id}
-                intervention={intervention}
-                onDelete={handleDeleteIntervention}
-                onAddBeneficiaire={addBeneficiaire}
-                onDeleteBeneficiaire={deleteBeneficiaire}
-                onUpdateBeneficiaire={updateBeneficiaire}
-              />
-            ))
-          )}
-        </div>
-      </div>
-
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold">Nouvelle intervention</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600">
-                <X size={24} />
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Date *</label>
-                <input
-                  type="date"
-                  value={newIntervention.date}
-                  onChange={(e) => setNewIntervention({...newIntervention, date: e.target.value})}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Heure *</label>
-                <input
-                  type="time"
-                  value={newIntervention.time}
-                  onChange={(e) => setNewIntervention({...newIntervention, time: e.target.value})}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Lieu *</label>
-                <input
-                  type="text"
-                  value={newIntervention.lieu}
-                  onChange={(e) => setNewIntervention({...newIntervention, lieu: e.target.value})}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                  placeholder="Ex: Crèche Les Lutins"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Notes</label>
-                <textarea
-                  value={newIntervention.notes}
-                  onChange={(e) => setNewIntervention({...newIntervention, notes: e.target.value})}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                  rows="3"
-                />
-              </div>
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={() => setShowAddModal(false)}
-                  className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={handleAddIntervention}
-                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-                >
-                  Créer
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function InterventionCard({ intervention, onDelete, onAddBeneficiaire, onDeleteBeneficiaire, onUpdateBeneficiaire }) {
-  const [showBenefs, setShowBenefs] = useState(false);
-  const beneficiaires = intervention.beneficiaires || [];
-
-  return (
-    <div className="bg-white rounded-xl shadow-sm border">
-      <div className="p-6">
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-lg font-semibold text-purple-900">
-                {new Date(intervention.date).toLocaleDateString('fr-FR', {
-                  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-                })}
-              </span>
-              <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-                {intervention.time}
-              </span>
-            </div>
-            <p className="text-gray-700 font-medium">📍 {intervention.lieu}</p>
-            {intervention.notes && (
-              <p className="text-gray-600 text-sm mt-2 bg-gray-50 p-3 rounded-lg">{intervention.notes}</p>
-            )}
-          </div>
-          <div className="flex gap-2 ml-4">
-            <button
-              onClick={() => setShowBenefs(!showBenefs)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
-                showBenefs ? 'bg-purple-600 text-white' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
-              }`}
-            >
-              <Users size={18} />
-              Bénéficiaires ({beneficiaires.length})
-            </button>
-            <button
-              onClick={() => onDelete(intervention.id)}
-              className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-            >
-              <Trash2 size={18} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {showBenefs && (
-        <div className="border-t p-6 bg-gray-50">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold text-purple-900">👥 Bénéficiaires de cette intervention</h3>
-            <button
-              onClick={() => onAddBeneficiaire(intervention.id)}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-            >
-              <UserPlus size={18} />
-              Ajouter un bénéficiaire
-            </button>
-          </div>
-
-          {beneficiaires.length === 0 ? (
-            <div className="bg-white rounded-lg p-8 text-center">
-              <Users size={48} className="mx-auto text-gray-300 mb-3" />
-              <p className="text-gray-500 mb-4">Aucun bénéficiaire pour cette intervention</p>
-              <button
-                onClick={() => onAddBeneficiaire(intervention.id)}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-              >
-                <UserPlus className="inline mr-2" size={18} />
-                Ajouter le premier bénéficiaire
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {beneficiaires.map((benef) => (
-                <BeneficiaireEvaluation
-                  key={benef.id}
-                  interventionId={intervention.id}
-                  benef={benef}
-                  onUpdate={onUpdateBeneficiaire}
-                  onDelete={onDeleteBeneficiaire}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function BeneficiaireEvaluation({ interventionId, benef, onUpdate, onDelete }) {
-  const [showEval, setShowEval] = useState(false);
-
-  const updateBenefInfo = (field, value) => {
-    const updated = {
-      ...benef,
-      beneficiaire: { ...benef.beneficiaire, [field]: value }
-    };
-    onUpdate(interventionId, benef.id, updated);
-  };
-
-  const updateField = (field, value) => {
-    const updated = { ...benef, [field]: value };
-    onUpdate(interventionId, benef.id, updated);
-  };
-
-  const updateScore = (section, itemKey, moment, value) => {
-    const updated = {
-      ...benef,
-      evaluations: {
-        ...benef.evaluations,
-        [`${section}_${itemKey}_${moment}`]: value
-      }
-    };
-    onUpdate(interventionId, benef.id, updated);
-  };
-
-  const updateComment = (section, value) => {
-    const updated = {
-      ...benef,
-      commentaires: {
-        ...benef.commentaires,
-        [section]: value
-      }
-    };
-    onUpdate(interventionId, benef.id, updated);
-  };
-
-  const benefName = benef.beneficiaire.nom && benef.beneficiaire.prenom 
-    ? `${benef.beneficiaire.nom} ${benef.beneficiaire.prenom}`
-    : 'Bénéficiaire sans nom';
-
-  return (
-    <div className="bg-white rounded-lg border-2 border-purple-100">
-      <div className="p-4 bg-purple-50 flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-            👤
-          </div>
-          <div>
-            <h4 className="font-bold text-purple-900">{benefName}</h4>
-            {benef.beneficiaire.age && (
-              <p className="text-sm text-gray-600">{benef.beneficiaire.age} ans - {benef.beneficiaire.sexe}</p>
-            )}
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowEval(!showEval)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
-              showEval ? 'bg-purple-600 text-white' : 'bg-white text-purple-600 hover:bg-purple-50 border border-purple-200'
-            }`}
-          >
-            <FileText size={16} />
-            {showEval ? 'Masquer' : 'Grille'}
-          </button>
-          <button
-            onClick={() => onDelete(interventionId, benef.id)}
-            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      </div>
-
-      {showEval && (
-        <div className="p-6">
-          {/* Informations bénéficiaire */}
-          <div className="mb-6 p-4 bg-purple-50 rounded-lg">
-            <h5 className="font-bold mb-4 text-purple-900">INFORMATIONS BÉNÉFICIAIRE</h5>
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                type="text"
-                placeholder="Nom *"
-                value={benef.beneficiaire.nom}
-                onChange={(e) => updateBenefInfo('nom', e.target.value)}
-                className="px-3 py-2 border rounded-lg text-sm"
-              />
-              <input
-                type="text"
-                placeholder="Prénom *"
-                value={benef.beneficiaire.prenom}
-                onChange={(e) => updateBenefInfo('prenom', e.target.value)}
-                className="px-3 py-2 border rounded-lg text-sm"
-              />
-              <input
-                type="date"
-                value={benef.beneficiaire.dateNaissance}
-                onChange={(e) => updateBenefInfo('dateNaissance', e.target.value)}
-                className="px-3 py-2 border rounded-lg text-sm"
-              />
-              <input
-                type="number"
-                placeholder="Âge"
-                value={benef.beneficiaire.age}
-                onChange={(e) => updateBenefInfo('age', e.target.value)}
-                className="px-3 py-2 border rounded-lg text-sm"
-              />
-              <select
-                value={benef.beneficiaire.sexe}
-                onChange={(e) => updateBenefInfo('sexe', e.target.value)}
-                className="px-3 py-2 border rounded-lg text-sm"
-              >
-                <option>Féminin</option>
-                <option>Masculin</option>
-                <option>Autre</option>
-              </select>
-            </div>
-            <div className="mt-3 space-y-2">
-              <textarea
-                placeholder="Pathologies et/ou syndromes"
-                value={benef.pathologies}
-                onChange={(e) => updateField('pathologies', e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg text-sm"
-                rows="2"
-              />
-              <textarea
-                placeholder="Souhaits musicaux"
-                value={benef.souhaitsMusicaux}
-                onChange={(e) => updateField('souhaitsMusicaux', e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg text-sm"
-                rows="2"
-              />
-              <textarea
-                placeholder="Objectifs pour l'institution"
-                value={benef.objectifs}
-                onChange={(e) => updateField('objectifs', e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg text-sm"
-                rows="2"
-              />
-            </div>
-          </div>
-
-          {/* Échelle */}
-          <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-            <p className="font-semibold text-sm mb-1">Échelle : </p>
-            <div className="flex gap-2 text-xs flex-wrap">
-              <span>0:Inexistant</span>
-              <span>1:Très faible</span>
-              <span>2:Faible</span>
-              <span>3:Modéré</span>
-              <span>4:Élevé</span>
-              <span>5:Très élevé</span>
-            </div>
-          </div>
-
-          {/* Sections d'évaluation */}
-          <div className="space-y-4">
-            {Object.entries(EVALUATION_STRUCTURE).map(([sectionKey, section]) => (
-              <div key={sectionKey} className="border rounded-lg p-4 bg-gray-50">
-                <h5 className="font-bold text-sm mb-3 text-purple-900">{section.title}</h5>
-                
-                {section.items.map((item) => (
-                  <div key={item.key} className="mb-3 p-3 bg-white rounded-lg">
-                    <p className="font-medium text-xs mb-2">{item.label}</p>
-                    <div className="flex gap-1 flex-wrap">
-                      {item.moments.map(moment => (
-                        <div key={moment} className="flex-1 min-w-[70px]">
-                          <label className="block text-xs text-gray-600 mb-1">{MOMENT_LABELS[moment]}</label>
-                          <select
-                            value={benef.evaluations[`${sectionKey}_${item.key}_${moment}`] || ''}
-                            onChange={(e) => updateScore(sectionKey, item.key, moment, e.target.value)}
-                            className="w-full px-1 py-1 border rounded text-center text-xs"
-                          >
-                            <option value="">-</option>
-                            {[0,1,2,3,4,5].map(v => <option key={v} value={v}>{v}</option>)}
-                          </select>
-                        </div>
+                  <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-purple-100">
+                    <p className="font-semibold text-sm text-gray-800 mb-4 text-center">Connexion rapide en 1 clic :</p>
+                    <div className="space-y-2">
+                      {USERS.map((user) => (
+                        <button key={user.id} onClick={() => handleQuickLogin(user)}
+                          className="w-full text-left px-4 py-3 bg-white hover:bg-purple-50 rounded-lg text-sm font-medium text-gray-700 hover:text-purple-900 transition border border-gray-200 hover:border-purple-300 shadow-sm hover:shadow flex items-center gap-3">
+                          <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold">
+                            {user.id.replace('prof', '')}
+                          </div>
+                          <span>{user.name}</span>
+                        </button>
                       ))}
                     </div>
                   </div>
-                ))}
-                
-                <textarea
-                  placeholder="Commentaires / Observations"
-                  value={benef.commentaires[sectionKey] || ''}
-                  onChange={(e) => updateComment(sectionKey, e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg text-sm mt-2"
-                  rows="2"
-                />
+                </div>
               </div>
-            ))}
-          </div>
+            );
+          }
 
-          {/* Comptes-rendus */}
-          <div className="mt-4 space-y-3">
-            <div className="border rounded-lg p-4 bg-white">
-              <label className="block font-medium text-sm mb-2">Compte-rendu HM (Psychologue)</label>
-              <textarea
-                value={benef.compteRenduHM}
-                onChange={(e) => updateField('compteRenduHM', e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg text-sm"
-                rows="3"
-              />
-            </div>
-            <div className="border rounded-lg p-4 bg-white">
-              <label className="block font-medium text-sm mb-2">Compte-rendu Établissement (Psychologue)</label>
-              <textarea
-                value={benef.compteRenduEtablissement}
-                onChange={(e) => updateField('compteRenduEtablissement', e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg text-sm"
-                rows="3"
-              />
-            </div>
-          </div>
+          const interventionsList = Object.values(interventions).sort((a, b) => new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time));
 
-          <div className="mt-4 p-3 bg-green-50 rounded-lg text-center text-sm text-green-700">
-            ✓ Toutes les modifications sont sauvegardées automatiquement
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+          return (
+            <div className="min-h-screen bg-gray-50">
+              {notification && (
+                <div className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                  {notification.type === 'success' && <span>✓</span>}
+                  <span>{notification.msg}</span>
+                </div>
+              )}
+
+              <header className="bg-white shadow-sm border-b sticky top-0 z-40">
+                <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
+                      <span className="text-white text-2xl">🎵</span>
+                    </div>
+                    <div>
+                      <h1 className="text-2xl font-bold text-purple-900">Haltes Musicales</h1>
+                      <p className="text-sm text-gray-600">Bienvenue, {currentUser.name}</p>
+                    </div>
+                  </div>
+                  <button onClick={() => { setCurrentUser(null); setInterventions({}); }}
+                    className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition">
+                    <span>🚪</span><span className="hidden sm:inline">Déconnexion</span>
+                  </button>
+                </div>
+              </header>
+
+              <div className="max-w-7xl mx-auto px-4 py-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900">Mes Interventions ({interventionsList.length})</h2>
+                  <button onClick={() => setShowAddModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition shadow-lg hover:shadow-xl">
+                    <span>➕</span> Nouvelle intervention
+                  </button>
+                </div>
+
+                <div className="grid gap-4">
+                  {interventionsList.length === 0 ? (
+                    <div className="bg-white rounded-xl p-12 text-center shadow">
+                      <span className="text-6xl block mb-4">📅</span>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">Aucune intervention</h3>
+                      <p className="text-gray-500 mb-6">Commencez par ajouter votre première intervention</p>
+                      <button onClick={() => setShowAddModal(true)}
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                        <span>➕</span> Créer une intervention
+                      </button>
+                    </div>
+                  ) : (
+                    interventionsList.map(intervention => (
+                      <InterventionCard key={intervention.id} intervention={intervention}
+                        onDelete={handleDeleteIntervention} onAddBeneficiaire={addBeneficiaire}
+                        onDeleteBeneficiaire={deleteBeneficiaire} onUpdateBeneficiaire={updateBeneficiaire} />
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {showAddModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                  <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+                    <div className="flex justify-between items-center mb-6">
+                      <h3 className="text-xl font-bold text-gray-900">Nouvelle intervention</h3>
+                      <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600 transition">
+                        <span className="text-2xl">×</span>
+                      </button>
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Date <span className="text-red-500">*</span></label>
+                        <input type="date" value={newIntervention.date}
+                          onChange={(e) => setNewIntervention({...newIntervention, date: e.target.value})}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"/>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Heure <span className="text-red-500">*</span></label>
+                        <input type="time" value={newIntervention.time}
+                          onChange={(e) => setNewIntervention({...newIntervention, time: e.target.value})}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"/>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Lieu <span className="text-red-500">*</span></label>
+                        <input type="text" value={newIntervention.lieu} placeholder="Ex: Crèche Les Lutins"
+                          onChange={(e) => setNewIntervention({...newIntervention, lieu: e.target.value})}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"/>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Notes / Observations</label>
+                        <textarea value={newIntervention.notes} rows="3" placeholder="Observations, remarques, thème..."
+                          onChange={(e) => setNewIntervention({...newIntervention, notes: e.target.value})}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"/>
+                      </div>
+                      <div className="flex gap-3 pt-4">
+                        <button onClick={() => setShowAddModal(false)}
+                          className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                          Annuler
+                        </button>
+                        <button onClick={handleAddIntervention}
+                          className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                          Ajouter
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        function InterventionCard({ intervention, onDelete, onAddBeneficiaire, onDeleteBeneficiaire, onUpdateBeneficiaire }) {
+          const [showBenefs, setShowBenefs] = useState(false);
+          const beneficiaires = intervention.beneficiaires || [];
+
+          return (
+            <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition p-6 border border-gray-100">
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2 flex-wrap">
+                    <span className="text-lg font-semibold text-purple-900">
+                      {new Date(intervention.date).toLocaleDateString('fr-FR', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}
+                    </span>
+                    <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">{intervention.time}</span>
+                  </div>
+                  <p className="text-gray-700 font-medium flex items-center gap-2"><span className="text-xl">📍</span>{intervention.lieu}</p>
+                  {intervention.notes && <p className="text-gray-600 text-sm mt-2 bg-gray-50 p-3 rounded-lg">{intervention.notes}</p>}
+                </div>
+                <div className="flex gap-2 ml-4">
+                  <button onClick={() => setShowBenefs(!showBenefs)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
+                      showBenefs ? 'bg-purple-600 text-white shadow-lg' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
+                    }`}>
+                    <span>👥</span> Bénéficiaires ({beneficiaires.length})
+                  </button>
+                  <button onClick={() => onDelete(intervention.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition" title="Supprimer">
+                    <span>🗑️</span>
+                  </button>
+                </div>
+              </div>
+
+              {showBenefs && (
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="font-medium text-gray-900 flex items-center gap-2"><span>👥</span> Bénéficiaires de cette intervention</h4>
+                    <button onClick={() => onAddBeneficiaire(intervention.id)}
+                      className="flex items-center gap-2 px-3 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition text-sm font-medium">
+                      <span>➕</span> Ajouter
+                    </button>
+                  </div>
+                  
+                  {beneficiaires.length === 0 ? (
+                    <div className="bg-gray-50 rounded-lg p-6 text-center">
+                      <span className="text-4xl block mb-2">👥</span>
+                      <p className="text-gray-500 text-sm mb-3">Aucun bénéficiaire</p>
+                      <button onClick={() => onAddBeneficiaire(intervention.id)}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm">
+                        <span className="mr-2">➕</span> Ajouter le premier bénéficiaire
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {beneficiaires.map((benef) => (
+                        <BeneficiaireEvaluation key={benef.id} interventionId={intervention.id} benef={benef}
+                          onUpdate={onUpdateBeneficiaire} onDelete={onDeleteBeneficiaire} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        function BeneficiaireEvaluation({ interventionId, benef, onUpdate, onDelete }) {
+          const [showEval, setShowEval] = useState(false);
+
+          const updateBenefInfo = (field, value) => onUpdate(interventionId, benef.id, {...benef, beneficiaire: {...benef.beneficiaire, [field]: value}});
+          const updateField = (field, value) => onUpdate(interventionId, benef.id, {...benef, [field]: value});
+          const updateScore = (section, itemKey, moment, value) => onUpdate(interventionId, benef.id, {...benef, evaluations: {...benef.evaluations, [`${section}_${itemKey}_${moment}`]: value}});
+          const updateComment = (section, value) => onUpdate(interventionId, benef.id, {...benef, commentaires: {...benef.commentaires, [section]: value}});
+
+          const benefName = benef.beneficiaire.nom && benef.beneficiaire.prenom ? `${benef.beneficiaire.nom} ${benef.beneficiaire.prenom}` : 'Bénéficiaire sans nom';
+
+          return (
+            <div className="bg-gray-50 rounded-lg border border-gray-200">
+              <div className="p-3 bg-gradient-to-r from-purple-50 to-blue-50 flex justify-between items-center rounded-t-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold"><span>👤</span></div>
+                  <div>
+                    <h5 className="font-bold text-purple-900 text-sm">{benefName}</h5>
+                    {benef.beneficiaire.age && <p className="text-xs text-gray-600">{benef.beneficiaire.age} ans - {benef.beneficiaire.sexe}</p>}
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => setShowEval(!showEval)}
+                    className={`flex items-center gap-1 px-3 py-1 rounded-lg font-medium transition text-sm ${
+                      showEval ? 'bg-purple-600 text-white' : 'bg-white text-purple-600 hover:bg-purple-50 border border-purple-200'
+                    }`}>
+                    <span>📋</span> {showEval ? 'Masquer' : 'Grille'}
+                  </button>
+                  <button onClick={() => onDelete(interventionId, benef.id)} className="p-1 text-red-600 hover:bg-red-50 rounded-lg transition text-sm">
+                    <span>🗑️</span>
+                  </button>
+                </div>
+              </div>
+
+              {showEval && (
+                <div className="p-4">
+                  <div className="mb-4 p-3 bg-white rounded-lg border border-purple-100">
+                    <h6 className="font-bold text-xs mb-3 text-purple-900">INFORMATIONS BÉNÉFICIAIRE</h6>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input type="text" placeholder="Nom *" value={benef.beneficiaire.nom} onChange={(e) => updateBenefInfo('nom', e.target.value)}
+                        className="px-3 py-2 border rounded-lg text-xs"/>
+                      <input type="text" placeholder="Prénom *" value={benef.beneficiaire.prenom} onChange={(e) => updateBenefInfo('prenom', e.target.value)}
+                        className="px-3 py-2 border rounded-lg text-xs"/>
+                      <input type="date" value={benef.beneficiaire.dateNaissance} onChange={(e) => updateBenefInfo('dateNaissance', e.target.value)}
+                        className="px-3 py-2 border rounded-lg text-xs"/>
+                      <input type="number" placeholder="Âge" value={benef.beneficiaire.age} onChange={(e) => updateBenefInfo('age', e.target.value)}
+                        className="px-3 py-2 border rounded-lg text-xs"/>
+                      <select value={benef.beneficiaire.sexe} onChange={(e) => updateBenefInfo('sexe', e.target.value)}
+                        className="px-3 py-2 border rounded-lg text-xs">
+                        <option>Féminin</option>
+                        <option>Masculin</option>
+                        <option>Autre</option>
+                      </select>
+                    </div>
+                    <div className="mt-2 space-y-2">
+                      <textarea placeholder="Pathologies et/ou syndromes" value={benef.pathologies} onChange={(e) => updateField('pathologies', e.target.value)}
+                        className="w-full px-3 py-2 border rounded-lg text-xs" rows="2"/>
+                      <textarea placeholder="Souhaits musicaux" value={benef.souhaitsMusicaux} onChange={(e) => updateField('souhaitsMusicaux', e.target.value)}
+                        className="w-full px-3 py-2 border rounded-lg text-xs" rows="2"/>
+                      <textarea placeholder="Objectifs pour l'institution" value={benef.objectifs} onChange={(e) => updateField('objectifs', e.target.value)}
+                        className="w-full px-3 py-2 border rounded-lg text-xs" rows="2"/>
+                    </div>
+                  </div>
+
+                  <div className="mb-3 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="font-semibold text-xs mb-1">Échelle : 0:Inexistant | 1:Très faible | 2:Faible | 3:Modéré | 4:Élevé | 5:Très élevé</p>
+                  </div>
+
+                  <div className="space-y-3">
+                    {Object.entries(EVALUATION_STRUCTURE).map(([sectionKey, section]) => (
+                      <div key={sectionKey} className="bg-white rounded-lg border border-gray-200 p-3">
+                        <h6 className="font-bold text-xs mb-2 text-purple-900 pb-2 border-b border-purple-100">{section.title}</h6>
+                        {section.items.map((item) => (
+                          <div key={item.key} className="mb-2 p-2 bg-gray-50 rounded-lg">
+                            <p className="font-medium text-xs mb-2">{item.label}</p>
+                            <div className="flex gap-1 flex-wrap">
+                              {item.moments.map(moment => (
+                                <div key={moment} className="flex-1 min-w-[60px]">
+                                  <label className="block text-xs text-gray-600 mb-1">{MOMENT_LABELS[moment]}</label>
+                                  <select value={benef.evaluations[`${sectionKey}_${item.key}_${moment}`] || ''}
+                                    onChange={(e) => updateScore(sectionKey, item.key, moment, e.target.value)}
+                                    className="w-full px-1 py-1 border rounded text-center text-xs">
+                                    <option value="">-</option>
+                                    {[0,1,2,3,4,5].map(v => <option key={v} value={v}>{v}</option>)}
+                                  </select>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                        <textarea placeholder="Commentaires / Observations" value={benef.commentaires[sectionKey] || ''}
+                          onChange={(e) => updateComment(sectionKey, e.target.value)}
+                          className="w-full px-3 py-2 border rounded-lg text-xs mt-2" rows="2"/>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-3 space-y-2">
+                    <div className="bg-white border rounded-lg p-3">
+                      <label className="block font-bold text-xs mb-2 text-purple-900">Compte-rendu HM (Psychologue)</label>
+                      <textarea value={benef.compteRenduHM} onChange={(e) => updateField('compteRenduHM', e.target.value)}
+                        className="w-full px-3 py-2 border rounded-lg text-xs" rows="3"/>
+                    </div>
+                    <div className="bg-white border rounded-lg p-3">
+                      <label className="block font-bold text-xs mb-2 text-purple-900">Compte-rendu Établissement (Psychologue)</label>
+                      <textarea value={benef.compteRenduEtablissement} onChange={(e) => updateField('compteRenduEtablissement', e.target.value)}
+                        className="w-full px-3 py-2 border rounded-lg text-xs" rows="3"/>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 p-2 bg-green-50 rounded-lg text-center border border-green-200">
+                    <p className="text-xs text-green-700 font-medium">✓ Sauvegarde automatique</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
