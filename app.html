@@ -16,9 +16,9 @@
         const { useState, useEffect } = React;
 
         const USERS = [
-          { email: 'prof1@haltes-musicales.fr', password: 'HM2024prof1', name: 'Professionnel 1', id: 'prof1' },
-          { email: 'prof2@haltes-musicales.fr', password: 'HM2024prof2', name: 'Professionnel 2', id: 'prof2' },
-          { email: 'prof3@haltes-musicales.fr', password: 'HM2024prof3', name: 'Professionnel 3', id: 'prof3' },
+          { email: 'prof1@haltes-musicales.fr', password: 'HM2024prof1', name: 'Michel SAMBUCHI', id: 'prof1' },
+          { email: 'prof2@haltes-musicales.fr', password: 'HM2024prof2', name: 'Dominique MICHEL', id: 'prof2' },
+          { email: 'prof3@haltes-musicales.fr', password: 'HM2024prof3', name: 'Danielle MERLE', id: 'prof3' },
           { email: 'prof4@haltes-musicales.fr', password: 'HM2024prof4', name: 'Professionnel 4', id: 'prof4' },
           { email: 'prof5@haltes-musicales.fr', password: 'HM2024prof5', name: 'Professionnel 5', id: 'prof5' }
         ];
@@ -190,8 +190,11 @@
               <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
                 <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
                   <div className="text-center mb-8">
-                    <div className="w-20 h-20 bg-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                      <span className="text-white text-4xl">🎵</span>
+                    <div className="w-40 h-32 mx-auto mb-4 flex items-center justify-center">
+                      <img src="logo-mut.png" alt="La Mut' Logo" className="w-full h-full object-contain" onError={(e) => {e.target.style.display='none'; e.target.nextSibling.style.display='flex'}}/>
+                      <div className="w-20 h-20 bg-purple-600 rounded-full hidden items-center justify-center">
+                        <span className="text-white text-4xl">🎵</span>
+                      </div>
                     </div>
                     <h1 className="text-3xl font-bold text-purple-900 mb-2">Haltes Musicales</h1>
                     <p className="text-gray-600">Plateforme Professionnels</p>
@@ -229,6 +232,11 @@
                         </button>
                       ))}
                     </div>
+                    <div className="mt-4 pt-4 border-t border-purple-200 text-xs text-gray-600">
+                      <p className="mb-2 font-medium">Ou tapez manuellement :</p>
+                      <p className="font-mono bg-white px-2 py-1 rounded text-xs">prof1@haltes-musicales.fr</p>
+                      <p className="font-mono bg-white px-2 py-1 rounded mt-1 text-xs">HM2024prof1</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -249,8 +257,11 @@
               <header className="bg-white shadow-sm border-b sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
-                      <span className="text-white text-2xl">🎵</span>
+                    <div className="w-16 h-12 flex items-center justify-center">
+                      <img src="logo-mut.png" alt="La Mut'" className="w-full h-full object-contain" onError={(e) => {e.target.style.display='none'; e.target.nextSibling.style.display='flex'}}/>
+                      <div className="w-12 h-12 bg-purple-600 rounded-full hidden items-center justify-center">
+                        <span className="text-white text-2xl">🎵</span>
+                      </div>
                     </div>
                     <div>
                       <h1 className="text-2xl font-bold text-purple-900">Haltes Musicales</h1>
