@@ -474,6 +474,112 @@
                                                         'bg-orange-50'
                                                       } disabled:bg-gray-100`}
                                                     >
+                                                      <option value="">Sélectionner...</option>
+                                                      <option value="Oui">Oui</option>
+                                                      <option value="Non">Non</option>
+                                                      <option value="Parfois">Parfois</option>
+                                                    </select>
+                                                    <textarea
+                                                      placeholder="Commentaire..."
+                                                      value={benef.dates[dateIdx]?.commentaires?.[catKey]?.[item.key] || ''}
+                                                      onChange={(e) => updateComment(intervention.id, bIndex, dateIdx, catKey, item.key, e.target.value)}
+                                                      className="w-full px-2 py-1 border rounded text-xs bg-blue-50"
+                                                      rows="2"
+                                                    />
+                                                  </>
+                                                )}
+                                              </>
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ))}
+                            </div>
+
+                            <div className="mt-6 flex justify-end">
+                              <button 
+                                onClick={() => generatePDF(intervention.id, bIndex)}
+                                className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow-lg"
+                              >
+                                <Icons.FileDown />
+                                Génération PDF et diagramme
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {showAddModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-bold text-gray-900">Nouvelle intervention</h3>
+                  <button 
+                    onClick={() => setShowAddModal(false)} 
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <span className="text-2xl">×</span>
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <input 
+                    type="date" 
+                    value={newIntervention.date}
+                    onChange={(e) => setNewIntervention({...newIntervention, date: e.target.value})}
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                  <input 
+                    type="time" 
+                    value={newIntervention.time}
+                    onChange={(e) => setNewIntervention({...newIntervention, time: e.target.value})}
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                  <input 
+                    type="text" 
+                    value={newIntervention.lieu} 
+                    placeholder="Lieu"
+                    onChange={(e) => setNewIntervention({...newIntervention, lieu: e.target.value})}
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                  <div className="flex gap-3">
+                    <button 
+                      onClick={() => setShowAddModal(false)}
+                      className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50"
+                    >
+                      Annuler
+                    </button>
+                    <button 
+                      onClick={handleAddIntervention}
+                      className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                    >
+                      Ajouter
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.render(<HaltesMusicalesApp />, document.getElementById('root'));
+  </script>
+</body>
+</html> === 'yellow' ? 'bg-yellow-50' : 
+                                                        item.type === 'white' ? 'bg-white' : 
+                                                        'bg-orange-50'
+                                                      } disabled:bg-gray-100`}
+                                                    >
                                                       <option value="">Non coté</option>
                                                       <option value="0">0 - Absent</option>
                                                       <option value="1">1 - Léger</option>
