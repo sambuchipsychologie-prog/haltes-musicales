@@ -959,7 +959,8 @@
                                   placeholder="Compte-rendu du psychologue de l'établissement..."
                                   value={benef.compteRenduEtablissement}
                                   onChange={(e) => updateBeneficiaire(intervention.id, bIndex, 'compteRenduEtablissement', e.target.value)}
-                                  className="w-full px-3 py-2 border rounded-lg bg-blue-50" 
+                                  disabled={!canEdit('invite')}
+                                  className="w-full px-3 py-2 border rounded-lg bg-green-50 disabled:bg-gray-100" 
                                   rows="5"
                                 />
                               </div>
