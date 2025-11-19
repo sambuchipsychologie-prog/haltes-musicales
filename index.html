@@ -183,29 +183,15 @@
           return;
         }
 
-        if (!signupData.name.trim() || !signupData.code.trim()) {
-          showNotif('Remplissez tous les champs', 'error');
-          return;
-        }
-
         const allUsers = [...users.professionnels, ...users.invites];
-        if (allUsers.find(u => u.code === signupData.code.trim())) {
+        if (allUsers.find(u => u.code === signupData.code)) {
           showNotif('Ce code existe déjà', 'error');
           return;
         }
 
-        const userData = { 
-          professionnels: [...users.professionnels],
-          invites: [...users.invites]
-        };
-        
-        const id = Date.now().toString() + '_' + Math.random().toString(36).substring(2);
-        const userToAdd = { 
-          name: signupData.name.trim(), 
-          code: signupData.code.trim(), 
-          type: signupData.type, 
-          id 
-        };
+        const userData = { ...users };
+        const id = Date.now().toString();
+        const userToAdd = { ...signupData, id };
 
         if (signupData.type === 'professionnel') {
           userData.professionnels.push(userToAdd);
@@ -213,17 +199,10 @@
           userData.invites.push(userToAdd);
         }
 
-        try {
-          localStorage.setItem('haltes_users', JSON.stringify(userData));
-          setUsers(userData);
-          setCurrentUser(userToAdd);
-          setShowSignup(false);
-          setCode('');
-          setLoginError('');
-          showNotif('Compte créé avec succès !');
-        } catch (error) {
-          showNotif('Erreur lors de la création du compte', 'error');
-        }
+        saveUsers(userData);
+        setCurrentUser(userToAdd);
+        showNotif('Compte créé avec succès !');
+        setShowSignup(false);
       };
 
       const handleAddUser = () => {
@@ -436,12 +415,7 @@
                     </select>
                   </div>
                   <button 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleSignup();
-                    }} 
-                    type="button"
+                    onClick={handleSignup} 
                     className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
                   >
                     <Icons.Plus /> Créer mon compte
