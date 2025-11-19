@@ -177,9 +177,7 @@
         }
       };
 
-      const handleSignup = (e) => {
-        if (e) e.preventDefault();
-        
+      const handleSignup = () => {
         if (!signupData.name || !signupData.code) {
           showNotif('Remplissez tous les champs', 'error');
           return;
@@ -196,8 +194,12 @@
           return;
         }
 
-        const userData = { ...users };
-        const id = Date.now().toString() + '_' + Math.random();
+        const userData = { 
+          professionnels: [...users.professionnels],
+          invites: [...users.invites]
+        };
+        
+        const id = Date.now().toString() + '_' + Math.random().toString(36).substring(2);
         const userToAdd = { 
           name: signupData.name.trim(), 
           code: signupData.code.trim(), 
@@ -216,6 +218,8 @@
           setUsers(userData);
           setCurrentUser(userToAdd);
           setShowSignup(false);
+          setCode('');
+          setLoginError('');
           showNotif('Compte créé avec succès !');
         } catch (error) {
           showNotif('Erreur lors de la création du compte', 'error');
@@ -432,7 +436,12 @@
                     </select>
                   </div>
                   <button 
-                    onClick={handleSignup} 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleSignup();
+                    }} 
+                    type="button"
                     className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
                   >
                     <Icons.Plus /> Créer mon compte
