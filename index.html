@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -12,8 +11,10 @@
 </head>
 <body>
   <div id="root"></div>
+
   <script type="text/babel">
     const { useState, useEffect } = React;
+
     const Icons = {
       Calendar: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
       LogOut: ({ size = 20 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
@@ -21,50 +22,80 @@
       FileDown: ({ size = 20 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>,
       Lock: ({ size = 18 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
       Users: ({ size = 14 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+      Settings: ({ size = 20 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m8.66-15.66l-4.24 4.24m-4.84 4.84l-4.24 4.24M23 12h-6m-6 0H1m20.66 8.66l-4.24-4.24m-4.84-4.84l-4.24-4.24"/></svg>,
       Trash: ({ size = 18 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
     };
+
     const ADMIN_CODE = 'ADMIN2024';
-    const DEFAULT_USERS = { professionnels: [], invites: [] };
-    const EVALUATION_STRUCTURE = {
-      interactionsSociales: { title: "INTERACTIONS SOCIALES", items: [
-        { key: "attitudeHabituelle", label: "Attitude habituelle", moments: [1,2,3,4], type: "invite", fieldType: "text" },
-        { key: "interaction", label: "Interaction Sociale (échanges avec les personnes présentes)", moments: [1,2,3,4], type: "yellow" },
-        { key: "reactionEmotionnelle", label: "Réaction émotionnelle", moments: [1,2,3,4], type: "yellow" },
-        { key: "reactionSuiteHalte", label: "Réaction suite à la halte", moments: [1,2,3,4], type: "invite", fieldType: "text" }
-      ]},
-      stimulationSensorielle: { title: "STIMULATION MULTISENSORIELLE", items: [
-        { key: "attitudeHabituelle", label: "Attitude habituelle", moments: [1,2,3,4], type: "invite", fieldType: "text" },
-        { key: "reactionAuditive", label: "Réaction auditive (réceptivité à la musique)", moments: [1,2,3,4], type: "yellow" },
-        { key: "reactionVisuelle", label: "Réaction visuelle (réceptivité aux éléments visuels)", moments: [1,2,3,4], type: "yellow" },
-        { key: "reactionKinesth", label: "Réaction kinesthésique (mouvement, danse)", moments: [1,2,3,4], type: "yellow" },
-        { key: "reactionSuiteHalte", label: "Réaction suite à la halte", moments: [1,2,3,4], type: "invite", fieldType: "text" }
-      ]},
-      memoire: { title: "MÉMOIRE / SOUVENIRS", items: [
-        { key: "attitudeHabituelle", label: "Attitude habituelle", moments: [1,2,3,4], type: "invite", fieldType: "text" },
-        { key: "reactivationSouvenirs", label: "Réactivation et verbalisation de souvenirs", moments: [1,2,3,4], type: "yellow" },
-        { key: "reconnaissanceMusique", label: "Reconnaissance de la musique", moments: [1,2,3,4], type: "yellow" },
-        { key: "reactionEmotionnelle2", label: "Réaction émotionnelle", moments: [1,2,3,4], type: "yellow" },
-        { key: "reactionSuiteHalte", label: "Réaction suite à la halte", moments: [1,2,3,4], type: "invite", fieldType: "text" }
-      ]},
-      comportements: { title: "COMPORTEMENTS", items: [
-        { key: "ideesDelirantes", label: "Idées délirantes", moments: [1,2,3,4], type: "white" },
-        { key: "hallucinations", label: "Hallucinations", moments: [1,2,3,4], type: "white" },
-        { key: "agitation", label: "Agitation/Agressivité", moments: [1,2,3,4], type: "white" },
-        { key: "depression", label: "Dépression/Dysphorie", moments: [1,2,3,4], type: "white" },
-        { key: "anxiete", label: "Anxiété", moments: [1,2,3,4], type: "white" },
-        { key: "euphorie", label: "Exaltation de l'humeur / Euphorie", moments: [1,2,3,4], type: "white" },
-        { key: "apathie", label: "Apathie / Indifférence", moments: [1,2,3,4], type: "white" },
-        { key: "desinhibition", label: "Désinhibition", moments: [1,2,3,4], type: "white" },
-        { key: "irritabilite", label: "Irritabilité / Instabilité de l'humeur", moments: [1,2,3,4], type: "white" },
-        { key: "moteurAberrant", label: "Comportement moteur aberrant", moments: [1,2,3,4], type: "white" }
-      ]}
+
+    const DEFAULT_USERS = {
+      professionnels: [],
+      invites: []
     };
-    const MOMENT_LABELS = { 1: "Intervention 1", 2: "Intervention 2", 3: "Intervention 3", 4: "Intervention 4" };
+
+    const EVALUATION_STRUCTURE = {
+      interactionsSociales: {
+        title: "INTERACTIONS SOCIALES",
+        items: [
+          { key: "attitudeHabituelle", label: "Attitude habituelle", moments: [1,2,3,4], type: "invite", fieldType: "text" },
+          { key: "interaction", label: "Interaction Sociale (échanges avec les personnes présentes)", moments: [1,2,3,4], type: "yellow" },
+          { key: "reactionEmotionnelle", label: "Réaction émotionnelle", moments: [1,2,3,4], type: "yellow" },
+          { key: "reactionSuiteHalte", label: "Réaction suite à la halte", moments: [1,2,3,4], type: "invite", fieldType: "text" }
+        ]
+      },
+      stimulationSensorielle: {
+        title: "STIMULATION MULTISENSORIELLE",
+        items: [
+          { key: "attitudeHabituelle", label: "Attitude habituelle", moments: [1,2,3,4], type: "invite", fieldType: "text" },
+          { key: "reactionAuditive", label: "Réaction auditive (réceptivité à la musique)", moments: [1,2,3,4], type: "yellow" },
+          { key: "reactionVisuelle", label: "Réaction visuelle (réceptivité aux éléments visuels)", moments: [1,2,3,4], type: "yellow" },
+          { key: "reactionKinesth", label: "Réaction kinesthésique (mouvement, danse)", moments: [1,2,3,4], type: "yellow" },
+          { key: "reactionSuiteHalte", label: "Réaction suite à la halte", moments: [1,2,3,4], type: "invite", fieldType: "text" }
+        ]
+      },
+      memoire: {
+        title: "MÉMOIRE / SOUVENIRS",
+        items: [
+          { key: "attitudeHabituelle", label: "Attitude habituelle", moments: [1,2,3,4], type: "invite", fieldType: "text" },
+          { key: "reactivationSouvenirs", label: "Réactivation et verbalisation de souvenirs", moments: [1,2,3,4], type: "yellow" },
+          { key: "reconnaissanceMusique", label: "Reconnaissance de la musique", moments: [1,2,3,4], type: "yellow" },
+          { key: "reactionEmotionnelle2", label: "Réaction émotionnelle", moments: [1,2,3,4], type: "yellow" },
+          { key: "reactionSuiteHalte", label: "Réaction suite à la halte", moments: [1,2,3,4], type: "invite", fieldType: "text" }
+        ]
+      },
+      comportements: {
+        title: "COMPORTEMENTS",
+        items: [
+          { key: "ideesDelirantes", label: "Idées délirantes", moments: [1,2,3,4], type: "white" },
+          { key: "hallucinations", label: "Hallucinations", moments: [1,2,3,4], type: "white" },
+          { key: "agitation", label: "Agitation/Agressivité", moments: [1,2,3,4], type: "white" },
+          { key: "depression", label: "Dépression/Dysphorie", moments: [1,2,3,4], type: "white" },
+          { key: "anxiete", label: "Anxiété", moments: [1,2,3,4], type: "white" },
+          { key: "euphorie", label: "Exaltation de l'humeur / Euphorie", moments: [1,2,3,4], type: "white" },
+          { key: "apathie", label: "Apathie / Indifférence", moments: [1,2,3,4], type: "white" },
+          { key: "desinhibition", label: "Désinhibition", moments: [1,2,3,4], type: "white" },
+          { key: "irritabilite", label: "Irritabilité / Instabilité de l'humeur", moments: [1,2,3,4], type: "white" },
+          { key: "moteurAberrant", label: "Comportement moteur aberrant", moments: [1,2,3,4], type: "white" }
+        ]
+      }
+    };
+
+    const MOMENT_LABELS = { 
+      1: "Intervention 1", 
+      2: "Intervention 2", 
+      3: "Intervention 3", 
+      4: "Intervention 4" 
+    };
+
     function createEmptyEvaluation() {
       return {
         id: Date.now().toString() + Math.random(),
         beneficiaire: { nom: '', prenom: '', dateNaissance: '', sexe: 'Féminin' },
-        pathologies: '', souhaitsMusicaux: '', objectifs: '', compteRenduMut: '', compteRenduEtablissement: '',
+        pathologies: '', 
+        souhaitsMusicaux: '',
+        objectifs: '',
+        compteRenduMut: '',
+        compteRenduEtablissement: '',
         dates: [
           { date: '', evaluations: {}, commentaires: {}, label: 'Intervention 1' },
           { date: '', evaluations: {}, commentaires: {}, label: 'Intervention 2' },
@@ -91,172 +122,515 @@
       const [showDateTypeModal, setShowDateTypeModal] = useState(null);
       const [showRgpdModal, setShowRgpdModal] = useState(false);
 
-```
-  useEffect(() => {
-    const savedUsers = localStorage.getItem('haltes_users');
-    if (savedUsers) {
-      try { setUsers(JSON.parse(savedUsers)); }
-      catch (e) { setUsers(DEFAULT_USERS); }
-    }
-  }, []);
-  
-  useEffect(() => { if (currentUser && currentUser.type !== 'admin') loadUserData(); }, [currentUser]);
-  
-  const showNotif = (msg, type = 'success') => { setNotification({ msg, type }); setTimeout(() => setNotification(null), 3000); };
-  const loadUserData = () => { try { const data = localStorage.getItem(`interventions_${currentUser.id}`); if (data) setInterventions(JSON.parse(data)); } catch (e) { setInterventions({}); } };
-  const saveInterventions = (data) => { try { localStorage.setItem(`interventions_${currentUser.id}`, JSON.stringify(data)); } catch (e) { console.error('Erreur:', e); } };
-  const saveUsers = (userData) => { localStorage.setItem('haltes_users', JSON.stringify(userData)); setUsers(userData); };
-  
-  const handleLogin = () => {
-    if (loginData.email.trim() === 'admin' && loginData.password.trim() === ADMIN_CODE) {
-      setCurrentUser({ type: 'admin', name: 'Administrateur', id: 'admin' });
-      showNotif('Bienvenue Administrateur !');
-      setShowAdminPanel(true);
-      setShowAdminLogin(false);
-      return;
-    }
-    const allUsers = [...users.professionnels, ...users.invites];
-    const user = allUsers.find(u => u.email === loginData.email.trim() && u.password === loginData.password.trim());
-    if (user) { setCurrentUser(user); showNotif(`Bienvenue ${user.name} !`); setShowSignup(false); }
-    else { setLoginError('Email ou mot de passe incorrect'); }
-  };
-  
-  const handleSignup = () => {
-    if (!signupData.name || !signupData.password || !signupData.email) {
-      showNotif('Remplissez tous les champs obligatoires', 'error'); return;
-    }
-    if (signupData.password.length < 8) {
-      showNotif('Le mot de passe doit contenir au moins 8 caractères', 'error'); return;
-    }
-    if (!signupData.rgpdConsent) {
-      showNotif('Vous devez accepter la politique de confidentialité', 'error'); return;
-    }
-    const allUsers = [...users.professionnels, ...users.invites];
-    if (allUsers.find(u => u.email === signupData.email)) {
-      showNotif('Cet email existe déjà', 'error'); return;
-    }
-    const userData = { ...users };
-    const id = Date.now().toString();
-    const userToAdd = { name: signupData.name, email: signupData.email, password: signupData.password, type: signupData.type, id, etablissement: signupData.etablissement || '', createdAt: new Date().toISOString(), rgpdConsent: true };
-    if (signupData.type === 'professionnel') userData.professionnels.push(userToAdd);
-    else userData.invites.push(userToAdd);
-    saveUsers(userData);
-    setCurrentUser(userToAdd);
-    showNotif('Compte créé avec succès !');
-    setShowSignup(false);
-  };
-  
-  const handleAddUser = () => {
-    if (!newUser.name || !newUser.password) {
-      showNotif('Remplissez tous les champs', 'error'); return;
-    }
-    const allUsers = [...users.professionnels, ...users.invites];
-    if (allUsers.find(u => u.name === newUser.name)) {
-      showNotif('Ce nom existe déjà', 'error'); return;
-    }
-    const userData = { ...users };
-    const id = Date.now().toString();
-    const userToAdd = { ...newUser, id };
-    if (newUser.type === 'professionnel') userData.professionnels.push(userToAdd);
-    else userData.invites.push(userToAdd);
-    saveUsers(userData);
-    setNewUser({ name: '', password: '', type: 'professionnel' });
-    showNotif('Utilisateur ajouté !');
-  };
-  
-  const handleDeleteUser = (userId, type) => {
-    const userData = { ...users };
-    if (type === 'professionnel') userData.professionnels = userData.professionnels.filter(u => u.id !== userId);
-    else userData.invites = userData.invites.filter(u => u.id !== userId);
-    saveUsers(userData);
-    showNotif('Utilisateur supprimé');
-  };
-  
-  const handleAddIntervention = () => {
-    if (!newIntervention.date || !newIntervention.time || !newIntervention.lieu) {
-      showNotif('Remplissez tous les champs', 'error'); return;
-    }
-    const id = Date.now().toString();
-    const updated = { ...interventions, [id]: { ...newIntervention, id, beneficiaires: [] }};
-    setInterventions(updated); saveInterventions(updated); setShowAddModal(false);
-    setNewIntervention({ date: '', time: '', lieu: '', notes: '' });
-    showNotif('Intervention créée !');
-  };
-  
-  const canEdit = (fieldType) => {
-    if (!currentUser) return false;
-    if (fieldType === 'comment' || fieldType === 'yellow') return true;
-    if (fieldType === 'white') return currentUser.type === 'professionnel';
-    if (fieldType === 'invite') return currentUser.type === 'invite';
-    return false;
-  };
-  
-  const handleAddBeneficiaire = (interventionId) => {
-    const newBenef = createEmptyEvaluation();
-    const updated = { ...interventions };
-    if (!updated[interventionId].beneficiaires) updated[interventionId].beneficiaires = [];
-    updated[interventionId].beneficiaires.push(newBenef);
-    setInterventions(updated); saveInterventions(updated);
-    showNotif('Bénéficiaire ajouté !');
-  };
-  
-  const updateBeneficiaire = (interventionId, benefIndex, field, value) => {
-    const updated = { ...interventions };
-    const benef = updated[interventionId].beneficiaires[benefIndex];
-    if (field.includes('.')) {
-      const [parent, child] = field.split('.');
-      benef[parent][child] = value;
-    } else benef[field] = value;
-    setInterventions(updated); saveInterventions(updated);
-  };
-  
-  const updateEvaluation = (interventionId, benefIndex, dateIndex, category, itemKey, moment, value) => {
-    const updated = { ...interventions };
-    const benef = updated[interventionId].beneficiaires[benefIndex];
-    if (!benef.dates[dateIndex].evaluations[category]) benef.dates[dateIndex].evaluations[category] = {};
-    if (!benef.dates[dateIndex].evaluations[category][itemKey]) benef.dates[dateIndex].evaluations[category][itemKey] = {};
-    benef.dates[dateIndex].evaluations[category][itemKey][moment] = value;
-    setInterventions(updated); saveInterventions(updated);
-  };
-  
-  const updateComment = (interventionId, benefIndex, dateIndex, category, itemKey, value) => {
-    const updated = { ...interventions };
-    const benef = updated[interventionId].beneficiaires[benefIndex];
-    if (!benef.dates[dateIndex].commentaires[category]) benef.dates[dateIndex].commentaires[category] = {};
-    benef.dates[dateIndex].commentaires[category][itemKey] = value;
-    setInterventions(updated); saveInterventions(updated);
-  };
-  
-  const updateDate = (interventionId, benefIndex, dateIndex, value) => {
-    const updated = { ...interventions };
-    updated[interventionId].beneficiaires[benefIndex].dates[dateIndex].date = value;
-    setInterventions(updated); saveInterventions(updated);
-  };
-  
-  const addNewDate = (interventionId, benefIndex, dateType) => {
-    const updated = { ...interventions };
-    const benef = updated[interventionId].beneficiaires[benefIndex];
-    const currentInterventionCount = benef.dates.filter(d => d.label && d.label.startsWith('Intervention')).length;
-    const currentVRCount = benef.dates.filter(d => d.label && d.label.startsWith('Date VR')).length;
-    const label = dateType === 'intervention' ? `Intervention ${currentInterventionCount + 1}` : `Date VR ${currentVRCount + 1}`;
-    benef.dates.push({ date: '', evaluations: {}, commentaires: {}, label: label });
-    setInterventions(updated); saveInterventions(updated);
-    showNotif(`${label} ajoutée !`); setShowDateTypeModal(null);
-  };
-  
-  const generatePDF = () => { showNotif('Fonctionnalité PDF en développement'); };
-  
-  if (!currentUser) {
-    // Pages de connexion/inscription - code complet dans l'artifact principal
-    return <div>Voir artifact principal pour le code complet</div>;
-  }
-  
-  const interventionsList = Object.values(interventions).sort((a, b) => new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time));
-  return <div>Application principale - voir artifact principal</div>;
-}
-ReactDOM.render(<HaltesMusicalesApp />, document.getElementById('root'));
-```
+      useEffect(() => {
+        const savedUsers = localStorage.getItem('haltes_users');
+        if (savedUsers) {
+          try {
+            setUsers(JSON.parse(savedUsers));
+          } catch (e) {
+            setUsers(DEFAULT_USERS);
+          }
+        }
+      }, []);
 
-  </script>
-</body>
-</html>
+      useEffect(() => { 
+        if (currentUser && currentUser.type !== 'admin') loadUserData(); 
+      }, [currentUser]);
+
+      const showNotif = (msg, type = 'success') => {
+        setNotification({ msg, type });
+        setTimeout(() => setNotification(null), 3000);
+      };
+
+      const loadUserData = () => {
+        try {
+          const data = localStorage.getItem(`interventions_${currentUser.id}`);
+          if (data) setInterventions(JSON.parse(data));
+        } catch (e) { 
+          setInterventions({}); 
+        }
+      };
+
+      const saveInterventions = (data) => {
+        try {
+          localStorage.setItem(`interventions_${currentUser.id}`, JSON.stringify(data));
+        } catch (e) { 
+          console.error('Erreur:', e); 
+        }
+      };
+
+      const saveUsers = (userData) => {
+        localStorage.setItem('haltes_users', JSON.stringify(userData));
+        setUsers(userData);
+      };
+
+      const handleLogin = () => {
+        if (loginData.email.trim() === 'admin' && loginData.password.trim() === ADMIN_CODE) {
+          setCurrentUser({ type: 'admin', name: 'Administrateur', id: 'admin' });
+          showNotif('Bienvenue Administrateur !');
+          setShowAdminPanel(true);
+          setShowAdminLogin(false);
+          return;
+        }
+
+        const allUsers = [...users.professionnels, ...users.invites];
+        const user = allUsers.find(u => u.email === loginData.email.trim() && u.password === loginData.password.trim());
+        if (user) { 
+          setCurrentUser(user); 
+          showNotif(`Bienvenue ${user.name} !`); 
+          setShowSignup(false);
+        } else { 
+          setLoginError('Email ou mot de passe incorrect'); 
+        }
+      };
+
+      const handleSignup = () => {
+        if (!signupData.name || !signupData.password || !signupData.email) {
+          showNotif('Remplissez tous les champs obligatoires', 'error');
+          return;
+        }
+
+        if (signupData.password.length < 8) {
+          showNotif('Le mot de passe doit contenir au moins 8 caractères', 'error');
+          return;
+        }
+
+        if (!signupData.rgpdConsent) {
+          showNotif('Vous devez accepter la politique de confidentialité', 'error');
+          return;
+        }
+
+        const allUsers = [...users.professionnels, ...users.invites];
+        if (allUsers.find(u => u.email === signupData.email)) {
+          showNotif('Cet email existe déjà', 'error');
+          return;
+        }
+
+        const userData = { ...users };
+        const id = Date.now().toString();
+        const userToAdd = { 
+          name: signupData.name, 
+          email: signupData.email,
+          password: signupData.password, 
+          type: signupData.type, 
+          id,
+          etablissement: signupData.etablissement || '',
+          createdAt: new Date().toISOString(),
+          rgpdConsent: true
+        };
+
+        if (signupData.type === 'professionnel') {
+          userData.professionnels.push(userToAdd);
+        } else {
+          userData.invites.push(userToAdd);
+        }
+
+        saveUsers(userData);
+        setCurrentUser(userToAdd);
+        showNotif('Compte créé avec succès !');
+        setShowSignup(false);
+      };
+
+      const handleAddUser = () => {
+        if (!newUser.name || !newUser.password) {
+          showNotif('Remplissez tous les champs', 'error');
+          return;
+        }
+
+        const allUsers = [...users.professionnels, ...users.invites];
+        if (allUsers.find(u => u.name === newUser.name)) {
+          showNotif('Ce nom existe déjà', 'error');
+          return;
+        }
+
+        const userData = { ...users };
+        const id = Date.now().toString();
+        const userToAdd = { ...newUser, id };
+
+        if (newUser.type === 'professionnel') {
+          userData.professionnels.push(userToAdd);
+        } else {
+          userData.invites.push(userToAdd);
+        }
+
+        saveUsers(userData);
+        setNewUser({ name: '', password: '', type: 'professionnel' });
+        showNotif('Utilisateur ajouté !');
+      };
+
+      const handleDeleteUser = (userId, type) => {
+        const userData = { ...users };
+        if (type === 'professionnel') {
+          userData.professionnels = userData.professionnels.filter(u => u.id !== userId);
+        } else {
+          userData.invites = userData.invites.filter(u => u.id !== userId);
+        }
+        saveUsers(userData);
+        showNotif('Utilisateur supprimé');
+      };
+
+      const handleAddIntervention = () => {
+        if (!newIntervention.date || !newIntervention.time || !newIntervention.lieu) {
+          showNotif('Remplissez tous les champs', 'error');
+          return;
+        }
+        const id = Date.now().toString();
+        const updated = { ...interventions, [id]: { ...newIntervention, id, beneficiaires: [] }};
+        setInterventions(updated);
+        saveInterventions(updated);
+        setShowAddModal(false);
+        setNewIntervention({ date: '', time: '', lieu: '', notes: '' });
+        showNotif('Intervention créée !');
+      };
+
+      const canEdit = (fieldType) => {
+        if (!currentUser) return false;
+        if (fieldType === 'comment') return true;
+        if (fieldType === 'yellow') return true;
+        if (fieldType === 'white') return currentUser.type === 'professionnel';
+        if (fieldType === 'invite') return currentUser.type === 'invite';
+        return false;
+      };
+
+      const handleAddBeneficiaire = (interventionId) => {
+        const newBenef = createEmptyEvaluation();
+        const updated = { ...interventions };
+        if (!updated[interventionId].beneficiaires) updated[interventionId].beneficiaires = [];
+        updated[interventionId].beneficiaires.push(newBenef);
+        setInterventions(updated);
+        saveInterventions(updated);
+        showNotif('Bénéficiaire ajouté !');
+      };
+
+      const updateBeneficiaire = (interventionId, benefIndex, field, value) => {
+        const updated = { ...interventions };
+        const benef = updated[interventionId].beneficiaires[benefIndex];
+        if (field.includes('.')) {
+          const [parent, child] = field.split('.');
+          benef[parent][child] = value;
+        } else {
+          benef[field] = value;
+        }
+        setInterventions(updated);
+        saveInterventions(updated);
+      };
+
+      const updateEvaluation = (interventionId, benefIndex, dateIndex, category, itemKey, moment, value) => {
+        const updated = { ...interventions };
+        const benef = updated[interventionId].beneficiaires[benefIndex];
+        if (!benef.dates[dateIndex].evaluations[category]) {
+          benef.dates[dateIndex].evaluations[category] = {};
+        }
+        if (!benef.dates[dateIndex].evaluations[category][itemKey]) {
+          benef.dates[dateIndex].evaluations[category][itemKey] = {};
+        }
+        benef.dates[dateIndex].evaluations[category][itemKey][moment] = value;
+        setInterventions(updated);
+        saveInterventions(updated);
+      };
+
+      const updateComment = (interventionId, benefIndex, dateIndex, category, itemKey, value) => {
+        const updated = { ...interventions };
+        const benef = updated[interventionId].beneficiaires[benefIndex];
+        if (!benef.dates[dateIndex].commentaires[category]) {
+          benef.dates[dateIndex].commentaires[category] = {};
+        }
+        benef.dates[dateIndex].commentaires[category][itemKey] = value;
+        setInterventions(updated);
+        saveInterventions(updated);
+      };
+
+      const updateDate = (interventionId, benefIndex, dateIndex, value) => {
+        const updated = { ...interventions };
+        updated[interventionId].beneficiaires[benefIndex].dates[dateIndex].date = value;
+        setInterventions(updated);
+        saveInterventions(updated);
+      };
+
+      const addNewDate = (interventionId, benefIndex, dateType) => {
+        const updated = { ...interventions };
+        const benef = updated[interventionId].beneficiaires[benefIndex];
+        const currentInterventionCount = benef.dates.filter(d => d.label && d.label.startsWith('Intervention')).length;
+        const currentVRCount = benef.dates.filter(d => d.label && d.label.startsWith('Date VR')).length;
+        
+        let label;
+        if (dateType === 'intervention') {
+          label = `Intervention ${currentInterventionCount + 1}`;
+        } else {
+          label = `Date VR ${currentVRCount + 1}`;
+        }
+        
+        benef.dates.push({ 
+          date: '', 
+          evaluations: {}, 
+          commentaires: {},
+          label: label
+        });
+        setInterventions(updated);
+        saveInterventions(updated);
+        showNotif(`${label} ajoutée !`);
+        setShowDateTypeModal(null);
+      };
+
+      const generatePDF = () => {
+        showNotif('Fonctionnalité PDF en développement');
+      };
+      if (!currentUser) {
+        if (showAdminLogin) {
+          return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+                <div className="text-center mb-8">
+                  <div className="w-40 h-32 mx-auto mb-4 flex items-center justify-center">
+                    <span className="text-6xl">🔐</span>
+                  </div>
+                  <h1 className="text-3xl font-bold text-purple-900 mb-2">Administration</h1>
+                  <p className="text-gray-600">Accès réservé</p>
+                </div>
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email administrateur</label>
+                    <input type="text" value={loginData.email} onChange={(e) => setLoginData({...loginData, email: e.target.value})} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" placeholder="admin" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+                    <input type="password" value={loginData.password} onChange={(e) => setLoginData({...loginData, password: e.target.value})} onKeyPress={(e) => e.key === 'Enter' && handleLogin()} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" placeholder="Entrez le mot de passe" />
+                  </div>
+                  {loginError && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{loginError}</div>}
+                  <button onClick={handleLogin} className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition shadow-lg hover:shadow-xl flex items-center justify-center gap-2"><Icons.Lock /> Se connecter</button>
+                  <button onClick={() => { setShowAdminLogin(false); setLoginData({ email: '', password: '' }); setLoginError(''); }} className="w-full text-gray-600 hover:text-gray-800 text-sm">← Retour à l'inscription</button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        if (showSignup) {
+          return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+                <div className="text-center mb-8">
+                  <div className="w-40 h-32 mx-auto mb-4 flex items-center justify-center">
+                    <span className="text-6xl">🎵</span>
+                  </div>
+                  <h1 className="text-3xl font-bold text-purple-900 mb-2">Haltes Musicales</h1>
+                  <p className="text-gray-600">Créer votre compte</p>
+                </div>
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Votre nom complet *</label>
+                    <input type="text" value={signupData.name} onChange={(e) => setSignupData({...signupData, name: e.target.value})} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" placeholder="Ex: Dr. Marie Dupont" required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Votre email professionnel *</label>
+                    <input type="email" value={signupData.email} onChange={(e) => setSignupData({...signupData, email: e.target.value})} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" placeholder="exemple@etablissement.fr" required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Créez votre mot de passe * (min. 8 caractères)</label>
+                    <input type="password" value={signupData.password} onChange={(e) => setSignupData({...signupData, password: e.target.value})} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" placeholder="Mot de passe sécurisé" minLength="8" required />
+                    <p className="text-xs text-gray-500 mt-1">Minimum 8 caractères</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Vous êtes *</label>
+                    <select value={signupData.type} onChange={(e) => setSignupData({...signupData, type: e.target.value})} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                      <option value="professionnel">Psychologue Haltes Musicales</option>
+                      <option value="invite">Établissement (invité)</option>
+                    </select>
+                  </div>
+                  {signupData.type === 'invite' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Nom de votre établissement</label>
+                      <input type="text" value={signupData.etablissement} onChange={(e) => setSignupData({...signupData, etablissement: e.target.value})} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" placeholder="Ex: EHPAD Les Jardins" />
+                    </div>
+                  )}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <input type="checkbox" id="rgpd-consent" checked={signupData.rgpdConsent} onChange={(e) => setSignupData({...signupData, rgpdConsent: e.target.checked})} className="mt-1" />
+                      <label htmlFor="rgpd-consent" className="text-sm text-gray-700">
+                        J'accepte que mes données personnelles soient traitées conformément à la{' '}
+                        <button onClick={() => setShowRgpdModal(true)} className="text-purple-600 hover:text-purple-700 underline" type="button">politique de confidentialité</button>
+                        {' '}et au RGPD. *
+                      </label>
+                    </div>
+                  </div>
+                  <button onClick={() => handleSignup()} type="button" className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition shadow-lg hover:shadow-xl flex items-center justify-center gap-2"><Icons.Plus /> Créer mon compte</button>
+                  <div className="text-center">
+                    <button onClick={() => setShowSignup(false)} className="text-purple-600 hover:text-purple-700 text-sm font-medium">J'ai déjà un compte - Se connecter</button>
+                  </div>
+                  <div className="text-center pt-4 border-t">
+                    <button onClick={() => setShowAdminLogin(true)} className="text-gray-400 hover:text-gray-600 text-xs">Accès administrateur</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+              <div className="text-center mb-8">
+                <div className="w-40 h-32 mx-auto mb-4 flex items-center justify-center">
+                  <span className="text-6xl">🎵</span>
+                </div>
+                <h1 className="text-3xl font-bold text-purple-900 mb-2">Haltes Musicales</h1>
+                <p className="text-gray-600">Connexion</p>
+              </div>
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Votre email</label>
+                  <input type="email" value={loginData.email} onChange={(e) => setLoginData({...loginData, email: e.target.value})} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" placeholder="exemple@etablissement.fr" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+                  <input type="password" value={loginData.password} onChange={(e) => setLoginData({...loginData, password: e.target.value})} onKeyPress={(e) => e.key === 'Enter' && handleLogin()} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" placeholder="Entrez votre mot de passe" />
+                </div>
+                {loginError && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{loginError}</div>}
+                <button onClick={handleLogin} className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition shadow-lg hover:shadow-xl flex items-center justify-center gap-2"><Icons.Lock /> Se connecter</button>
+                <div className="text-center">
+                  <button onClick={() => { setShowSignup(true); setLoginData({ email: '', password: '' }); setLoginError(''); }} className="text-purple-600 hover:text-purple-700 text-sm font-medium">Pas encore de compte ? Créer un compte</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+      {showRgpdModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-2xl max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-900">Politique de confidentialité et RGPD</h3>
+              <button onClick={() => setShowRgpdModal(false)} className="text-gray-400 hover:text-gray-600"><span className="text-2xl">×</span></button>
+            </div>
+            <div className="space-y-4 text-sm text-gray-700">
+              <h4 className="font-bold text-lg text-purple-900">1. Responsable du traitement</h4>
+              <p>Haltes Musicales est responsable du traitement de vos données personnelles.</p>
+              <h4 className="font-bold text-lg text-purple-900">2. Données collectées</h4>
+              <p>Nous collectons les données suivantes :</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>Nom et prénom</li>
+                <li>Adresse email professionnelle</li>
+                <li>Mot de passe (crypté)</li>
+                <li>Type de compte (Psychologue ou Établissement)</li>
+                <li>Nom de l'établissement (pour les comptes invités)</li>
+                <li>Données relatives aux interventions et bénéficiaires</li>
+              </ul>
+              <h4 className="font-bold text-lg text-purple-900">3. Finalité du traitement</h4>
+              <p>Vos données sont utilisées pour :</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>La gestion de votre compte utilisateur</li>
+                <li>Le suivi des interventions musicales</li>
+                <li>L'évaluation des bénéficiaires</li>
+                <li>La génération de rapports et comptes-rendus</li>
+              </ul>
+              <h4 className="font-bold text-lg text-purple-900">4. Base légale</h4>
+              <p>Le traitement est fondé sur votre consentement explicite et l'exécution d'un contrat.</p>
+              <h4 className="font-bold text-lg text-purple-900">5. Conservation des données</h4>
+              <p>Vos données sont stockées localement dans votre navigateur et conservées tant que votre compte est actif.</p>
+              <h4 className="font-bold text-lg text-purple-900">6. Vos droits</h4>
+              <p>Conformément au RGPD, vous disposez des droits suivants :</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li><strong>Droit d'accès :</strong> Vous pouvez accéder à vos données à tout moment</li>
+                <li><strong>Droit de rectification :</strong> Vous pouvez modifier vos informations</li>
+                <li><strong>Droit à l'effacement :</strong> Vous pouvez supprimer votre compte</li>
+                <li><strong>Droit à la portabilité :</strong> Vous pouvez exporter vos données</li>
+                <li><strong>Droit d'opposition :</strong> Vous pouvez vous opposer au traitement</li>
+              </ul>
+              <h4 className="font-bold text-lg text-purple-900">7. Sécurité</h4>
+              <p>Nous mettons en œuvre des mesures techniques appropriées pour protéger vos données :</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>Stockage local sécurisé</li>
+                <li>Chiffrement des mots de passe</li>
+                <li>Accès restreint aux données</li>
+              </ul>
+              <h4 className="font-bold text-lg text-purple-900">8. Données des bénéficiaires</h4>
+              <p>Les données des bénéficiaires sont des données de santé sensibles. Elles sont :</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>Traitées avec le plus haut niveau de confidentialité</li>
+                <li>Accessibles uniquement par les professionnels autorisés</li>
+                <li>Stockées de manière sécurisée et isolée</li>
+              </ul>
+              <h4 className="font-bold text-lg text-purple-900">9. Contact</h4>
+              <p>Pour exercer vos droits ou toute question, contactez-nous à : contact@haltes-musicales.fr</p>
+              <p className="text-xs text-gray-500 mt-6">Dernière mise à jour : Décembre 2024</p>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button onClick={() => setShowRgpdModal(false)} className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">Fermer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      if (currentUser.type === 'admin' && showAdminPanel) {
+        return (
+          <div className="min-h-screen bg-gray-50">
+            {notification && (
+              <div className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                {notification.type === 'success' && <span>✓</span>}
+                <span>{notification.msg}</span>
+              </div>
+            )}
+            <header className="bg-white shadow-sm border-b sticky top-0 z-40">
+              <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <span className="text-4xl">🎵</span>
+                  <div>
+                    <h1 className="text-2xl font-bold text-purple-900">Haltes Musicales - Administration</h1>
+                    <p className="text-sm text-gray-600">Gestion des utilisateurs</p>
+                  </div>
+                </div>
+                <button onClick={() => { setCurrentUser(null); setShowAdminPanel(false); setShowSignup(true); setLoginData({ email: '', password: '' }); setLoginError(''); }} className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"><Icons.LogOut />Déconnexion</button>
+              </div>
+            </header>
+            <div className="max-w-7xl mx-auto px-4 py-6">
+              <div className="bg-white rounded-xl shadow p-6 mb-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Ajouter un utilisateur</h2>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <input type="text" placeholder="Nom complet" value={newUser.name} onChange={(e) => setNewUser({...newUser, name: e.target.value})} className="px-4 py-2 border rounded-lg" />
+                  <input type="password" placeholder="Mot de passe" value={newUser.password} onChange={(e) => setNewUser({...newUser, password: e.target.value})} className="px-4 py-2 border rounded-lg" />
+                  <select value={newUser.type} onChange={(e) => setNewUser({...newUser, type: e.target.value})} className="px-4 py-2 border rounded-lg">
+                    <option value="professionnel">Psychologue</option>
+                    <option value="invite">Établissement invité</option>
+                  </select>
+                  <button onClick={handleAddUser} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center justify-center gap-2"><Icons.Plus />Ajouter</button>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-xl shadow p-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">Psychologues ({users.professionnels.length})</h3>
+                  <div className="space-y-3">
+                    {users.professionnels.map(user => (
+                      <div key={user.id} className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                        <div>
+                          <p className="font-medium text-gray-900">{user.name}</p>
+                          <p className="text-sm text-gray-600">{user.email}</p>
+                          <p className="text-xs text-gray-500">Créé le: {new Date(user.createdAt || Date.now()).toLocaleDateString('fr-FR')}</p>
+                        </div>
+                        <button onClick={() => handleDeleteUser(user.id, 'professionnel')} className="text-red-600 hover:text-red-700"><Icons.Trash /></button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-white rounded-xl shadow p-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">Établissements invités ({users.invites.length})</h3>
+                  <div className="space-y-3">
+                    {users.invites.map(user => (
+                      <div key={user.id} className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                        <div>
+                          <p className="font-medium text-gray-900">{user.name}</p>
+                          <p className="text-sm text-gray-600">{user.email}</p>
+                          {user.etablissement && <p className="text-xs text-gray-500">{user.etablissement}</p>}
+                          <p className="text-xs text-gray-500">Créé le: {new Date(user.createdAt || Date.now()).toLocaleDateString('fr-FR')}</p>
+                        </div>
+                        <button onClick={() => handleDeleteUser(user.id, 'invite')} className="text-red-600 hover:text-red-700"><Icons.Trash /></button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      const interventionsList = Object.values(interventions).sort((a, b) => new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time));
