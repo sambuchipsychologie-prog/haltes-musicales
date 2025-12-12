@@ -1,4 +1,123 @@
-<!DOCTYPE html>
+if (!currentUser) {
+        if (showAdminLogin) {
+          return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+                <div className="text-center mb-8">
+                  <div className="w-40 h-32 mx-auto mb-4 flex items-center justify-center">
+                    <span className="text-6xl">🔐</span>
+                  </div>
+                  <h1 className="text-3xl font-bold text-purple-900 mb-2">Administration</h1>
+                  <p className="text-gray-600">Accès réservé</p>
+                </div>
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email administrateur</label>
+                    <input type="text" value={loginData.email} onChange={(e) => setLoginData({...loginData, email: e.target.value})} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" placeholder="admin" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+                    <input type="password" value={loginData.password} onChange={(e) => setLoginData({...loginData, password: e.target.value})} onKeyPress={(e) => e.key === 'Enter' && handleLogin()} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" placeholder="Entrez le mot de passe" />
+                  </div>
+                  {loginError && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{loginError}</div>}
+                  <button onClick={handleLogin} className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition shadow-lg hover:shadow-xl flex items-center justify-center gap-2"><Icons.Lock /> Se connecter</button>
+                  <button onClick={() => { setShowAdminLogin(false); setLoginData({ email: '', password: '' }); setLoginError(''); }} className="w-full text-gray-600 hover:text-gray-800 text-sm">← Retour à l'inscription</button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        if (showSignup) {
+          return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+                <div className="text-center mb-8">
+                  <div className="w-40 h-32 mx-auto mb-4 flex items-center justify-center">
+                    <span className="text-6xl">🎵</span>
+                  </div>
+                  <h1 className="text-3xl font-bold text-purple-900 mb-2">Haltes Musicales</h1>
+                  <p className="text-gray-600">Créer votre compte</p>
+                </div>
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Votre nom complet *</label>
+                    <input type="text" value={signupData.name} onChange={(e) => setSignupData({...signupData, name: e.target.value})} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" placeholder="Ex: Dr. Marie Dupont" required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Votre email professionnel *</label>
+                    <input type="email" value={signupData.email} onChange={(e) => setSignupData({...signupData, email: e.target.value})} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" placeholder="exemple@etablissement.fr" required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Créez votre mot de passe * (min. 8 caractères)</label>
+                    <input type="password" value={signupData.password} onChange={(e) => setSignupData({...signupData, password: e.target.value})} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" placeholder="Mot de passe sécurisé" minLength="8" required />
+                    <p className="text-xs text-gray-500 mt-1">Minimum 8 caractères</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Vous êtes *</label>
+                    <select value={signupData.type} onChange={(e) => setSignupData({...signupData, type: e.target.value})} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                      <option value="professionnel">Psychologue Haltes Musicales</option>
+                      <option value="invite">Établissement (invité)</option>
+                    </select>
+                  </div>
+                  {signupData.type === 'invite' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Nom de votre établissement</label>
+                      <input type="text" value={signupData.etablissement} onChange={(e) => setSignupData({...signupData, etablissement: e.target.value})} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" placeholder="Ex: EHPAD Les Jardins" />
+                    </div>
+                  )}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <input type="checkbox" id="rgpd-consent" checked={signupData.rgpdConsent} onChange={(e) => setSignupData({...signupData, rgpdConsent: e.target.checked})} className="mt-1" />
+                      <label htmlFor="rgpd-consent" className="text-sm text-gray-700">
+                        J'accepte que mes données personnelles soient traitées conformément à la{' '}
+                        <button onClick={() => setShowRgpdModal(true)} className="text-purple-600 hover:text-purple-700 underline" type="button">politique de confidentialité</button>
+                        {' '}et au RGPD. *
+                      </label>
+                    </div>
+                  </div>
+                  <button onClick={() => handleSignup()} type="button" className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition shadow-lg hover:shadow-xl flex items-center justify-center gap-2"><Icons.Plus /> Créer mon compte</button>
+                  <div className="text-center">
+                    <button onClick={() => setShowSignup(false)} className="text-purple-600 hover:text-purple-700 text-sm font-medium">J'ai déjà un compte - Se connecter</button>
+                  </div>
+                  <div className="text-center pt-4 border-t">
+                    <button onClick={() => setShowAdminLogin(true)} className="text-gray-400 hover:text-gray-600 text-xs">Accès administrateur</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+              <div className="text-center mb-8">
+                <div className="w-40 h-32 mx-auto mb-4 flex items-center justify-center">
+                  <span className="text-6xl">🎵</span>
+                </div>
+                <h1 className="text-3xl font-bold text-purple-900 mb-2">Haltes Musicales</h1>
+                <p className="text-gray-600">Connexion</p>
+              </div>
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Votre email</label>
+                  <input type="email" value={loginData.email} onChange={(e) => setLoginData({...loginData, email: e.target.value})} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" placeholder="exemple@etablissement.fr" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+                  <input type="password" value={loginData.password} onChange={(e) => setLoginData({...loginData, password: e.target.value})} onKeyPress={(e) => e.key === 'Enter' && handleLogin()} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" placeholder="Entrez votre mot de passe" />
+                </div>
+                {loginError && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{loginError}</div>}
+                <button onClick={handleLogin} className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition shadow-lg hover:shadow-xl flex items-center justify-center gap-2"><Icons.Lock /> Se connecter</button>
+                <div className="text-center">
+                  <button onClick={() => { setShowSignup(true); setLoginData({ email: '', password: '' }); setLoginError(''); }} className="text-purple-600 hover:text-purple-700 text-sm font-medium">Pas encore de compte ? Créer un compte</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
