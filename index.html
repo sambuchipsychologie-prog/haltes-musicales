@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Haltes Musicales</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
 </head>
 <body>
   <div id="root"></div>
@@ -15,63 +15,58 @@
     const { useState, useEffect } = React;
 
     const Icons = {
-      Calendar: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
-      LogOut: ({ size = 20 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
-      Plus: ({ size = 20 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
-      Lock: ({ size = 18 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
-      Users: ({ size = 14 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
-      Trash: ({ size = 18 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
-      FileDown: ({ size = 20 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+      Calendar: ({ size = 24 }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      ),
+      LogOut: ({ size = 20 }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      ),
+      Plus: ({ size = 20 }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      ),
+      Lock: ({ size = 18 }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      ),
+      Users: ({ size = 14 }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      ),
+      Trash: ({ size = 18 }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+      ),
+      FileDown: ({ size = 20 }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <polyline points="9 15 12 18 15 15"/>
+        </svg>
+      )
     };
 
     const ADMIN_CODE = 'ADMIN2024';
-
-    const EVALUATION_STRUCTURE = {
-      interactionsSociales: {
-        title: "INTERACTIONS SOCIALES",
-        items: [
-          { key: "attitudeHabituelle", label: "Attitude habituelle", moments: [1,2,3,4], type: "invite", fieldType: "text" },
-          { key: "interaction", label: "Interaction Sociale", moments: [1,2,3,4], type: "yellow" },
-          { key: "reactionEmotionnelle", label: "Réaction émotionnelle", moments: [1,2,3,4], type: "yellow" },
-          { key: "reactionSuiteHalte", label: "Réaction suite à la halte", moments: [1,2,3,4], type: "invite", fieldType: "text" }
-        ]
-      },
-      stimulationSensorielle: {
-        title: "STIMULATION MULTISENSORIELLE",
-        items: [
-          { key: "attitudeHabituelle", label: "Attitude habituelle", moments: [1,2,3,4], type: "invite", fieldType: "text" },
-          { key: "reactionAuditive", label: "Réaction auditive", moments: [1,2,3,4], type: "yellow" },
-          { key: "reactionVisuelle", label: "Réaction visuelle", moments: [1,2,3,4], type: "yellow" },
-          { key: "reactionKinesth", label: "Réaction kinesthésique", moments: [1,2,3,4], type: "yellow" },
-          { key: "reactionSuiteHalte", label: "Réaction suite à la halte", moments: [1,2,3,4], type: "invite", fieldType: "text" }
-        ]
-      },
-      memoire: {
-        title: "MÉMOIRE / SOUVENIRS",
-        items: [
-          { key: "attitudeHabituelle", label: "Attitude habituelle", moments: [1,2,3,4], type: "invite", fieldType: "text" },
-          { key: "reactivationSouvenirs", label: "Réactivation et verbalisation", moments: [1,2,3,4], type: "yellow" },
-          { key: "reconnaissanceMusique", label: "Reconnaissance de la musique", moments: [1,2,3,4], type: "yellow" },
-          { key: "reactionEmotionnelle2", label: "Réaction émotionnelle", moments: [1,2,3,4], type: "yellow" },
-          { key: "reactionSuiteHalte", label: "Réaction suite à la halte", moments: [1,2,3,4], type: "invite", fieldType: "text" }
-        ]
-      },
-      comportements: {
-        title: "COMPORTEMENTS",
-        items: [
-          { key: "ideesDelirantes", label: "Idées délirantes", moments: [1,2,3,4], type: "white" },
-          { key: "hallucinations", label: "Hallucinations", moments: [1,2,3,4], type: "white" },
-          { key: "agitation", label: "Agitation/Agressivité", moments: [1,2,3,4], type: "white" },
-          { key: "depression", label: "Dépression/Dysphorie", moments: [1,2,3,4], type: "white" },
-          { key: "anxiete", label: "Anxiété", moments: [1,2,3,4], type: "white" },
-          { key: "euphorie", label: "Euphorie", moments: [1,2,3,4], type: "white" },
-          { key: "apathie", label: "Apathie", moments: [1,2,3,4], type: "white" },
-          { key: "desinhibition", label: "Désinhibition", moments: [1,2,3,4], type: "white" },
-          { key: "irritabilite", label: "Irritabilité", moments: [1,2,3,4], type: "white" },
-          { key: "moteurAberrant", label: "Comportement moteur aberrant", moments: [1,2,3,4], type: "white" }
-        ]
-      }
-    };
 
     function createEmptyEvaluation() {
       return {
@@ -98,7 +93,14 @@
       const [notification, setNotification] = useState(null);
       const [loginData, setLoginData] = useState({ email: '', password: '' });
       const [loginError, setLoginError] = useState('');
-      const [signupData, setSignupData] = useState({ name: '', email: '', password: '', type: 'professionnel', etablissement: '', rgpdConsent: false });
+      const [signupData, setSignupData] = useState({ 
+        name: '', 
+        email: '', 
+        password: '', 
+        type: 'professionnel', 
+        etablissement: '', 
+        rgpdConsent: false 
+      });
       const [newIntervention, setNewIntervention] = useState({ date: '', time: '', lieu: '' });
       const [newUser, setNewUser] = useState({ name: '', email: '', password: '', type: 'professionnel' });
       const [expandedIntervention, setExpandedIntervention] = useState(null);
@@ -107,7 +109,6 @@
       const [showAdminPanel, setShowAdminPanel] = useState(false);
       const [showAddModal, setShowAddModal] = useState(false);
       const [showRgpdModal, setShowRgpdModal] = useState(false);
-      const [showDateTypeModal, setShowDateTypeModal] = useState(null);
       const [isLoading, setIsLoading] = useState(true);
 
       const showNotif = (msg, type = 'success') => {
@@ -129,9 +130,11 @@
         setIsLoading(true);
         try {
           const usersData = localStorage.getItem('haltes_users');
-          if (usersData) setUsers(JSON.parse(usersData));
+          if (usersData) {
+            setUsers(JSON.parse(usersData));
+          }
         } catch (e) {
-          console.log('Première utilisation');
+          console.log('Première utilisation', e);
         }
         setIsLoading(false);
       };
@@ -140,9 +143,13 @@
         if (!currentUser || currentUser.type === 'admin') return;
         try {
           const data = localStorage.getItem(`interventions_${currentUser.id}`);
-          if (data) setInterventions(JSON.parse(data));
-          else setInterventions({});
+          if (data) {
+            setInterventions(JSON.parse(data));
+          } else {
+            setInterventions({});
+          }
         } catch (e) {
+          console.log('Erreur chargement interventions', e);
           setInterventions({});
         }
       };
@@ -152,6 +159,7 @@
         try {
           localStorage.setItem(`interventions_${currentUser.id}`, JSON.stringify(data));
         } catch (e) { 
+          console.error('Erreur sauvegarde', e);
           showNotif('Erreur sauvegarde', 'error');
         }
       };
@@ -161,6 +169,7 @@
           localStorage.setItem('haltes_users', JSON.stringify(userData));
           setUsers(userData);
         } catch (e) {
+          console.error('Erreur sauvegarde users', e);
           showNotif('Erreur sauvegarde', 'error');
         }
       };
@@ -289,15 +298,6 @@
         showNotif('Intervention créée !');
       };
 
-      const canEdit = (fieldType) => {
-        if (!currentUser) return false;
-        if (fieldType === 'comment') return true;
-        if (fieldType === 'yellow') return true;
-        if (fieldType === 'white') return currentUser.type === 'professionnel';
-        if (fieldType === 'invite') return currentUser.type === 'invite';
-        return false;
-      };
-
       const handleAddBeneficiaire = (interventionId) => {
         const newBenef = createEmptyEvaluation();
         const updated = { ...interventions };
@@ -306,68 +306,6 @@
         setInterventions(updated);
         saveInterventions(updated);
         showNotif('Bénéficiaire ajouté !');
-      };
-
-      const updateBeneficiaire = (interventionId, benefIndex, field, value) => {
-        const updated = { ...interventions };
-        const benef = updated[interventionId].beneficiaires[benefIndex];
-        if (field.includes('.')) {
-          const [parent, child] = field.split('.');
-          benef[parent][child] = value;
-        } else {
-          benef[field] = value;
-        }
-        setInterventions(updated);
-        saveInterventions(updated);
-      };
-
-      const updateEvaluation = (interventionId, benefIndex, dateIndex, category, itemKey, moment, value) => {
-        const updated = { ...interventions };
-        const benef = updated[interventionId].beneficiaires[benefIndex];
-        if (!benef.dates[dateIndex].evaluations[category]) {
-          benef.dates[dateIndex].evaluations[category] = {};
-        }
-        if (!benef.dates[dateIndex].evaluations[category][itemKey]) {
-          benef.dates[dateIndex].evaluations[category][itemKey] = {};
-        }
-        benef.dates[dateIndex].evaluations[category][itemKey][moment] = value;
-        setInterventions(updated);
-        saveInterventions(updated);
-      };
-
-      const updateComment = (interventionId, benefIndex, dateIndex, category, itemKey, value) => {
-        const updated = { ...interventions };
-        const benef = updated[interventionId].beneficiaires[benefIndex];
-        if (!benef.dates[dateIndex].commentaires[category]) {
-          benef.dates[dateIndex].commentaires[category] = {};
-        }
-        benef.dates[dateIndex].commentaires[category][itemKey] = value;
-        setInterventions(updated);
-        saveInterventions(updated);
-      };
-
-      const updateDate = (interventionId, benefIndex, dateIndex, value) => {
-        const updated = { ...interventions };
-        updated[interventionId].beneficiaires[benefIndex].dates[dateIndex].date = value;
-        setInterventions(updated);
-        saveInterventions(updated);
-      };
-
-      const addNewDate = (interventionId, benefIndex, dateType) => {
-        const updated = { ...interventions };
-        const benef = updated[interventionId].beneficiaires[benefIndex];
-        const currentInterventionCount = benef.dates.filter(d => d.label && d.label.startsWith('Intervention')).length;
-        const currentVRCount = benef.dates.filter(d => d.label && d.label.startsWith('Date VR')).length;
-        let label = dateType === 'intervention' ? `Intervention ${currentInterventionCount + 1}` : `Date VR ${currentVRCount + 1}`;
-        benef.dates.push({ date: '', evaluations: {}, commentaires: {}, label: label });
-        setInterventions(updated);
-        saveInterventions(updated);
-        showNotif(`${label} ajoutée !`);
-        setShowDateTypeModal(null);
-      };
-
-      const generatePDF = () => {
-        showNotif('Fonctionnalité PDF en développement');
       };
 
       const getAccessibleInterventions = () => {
@@ -410,12 +348,213 @@
                 </div>
                 <div className="space-y-6">
                   <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email administrateur</label>
+                    <input 
+                      type="text" 
+                      value={loginData.email} 
+                      onChange={(e) => setLoginData({...loginData, email: e.target.value})} 
+                      className="w-full px-4 py-3 border rounded-lg" 
+                      placeholder="admin" 
+                    />
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
-                  <input type="password" value={loginData.password} onChange={(e) => setLoginData({...loginData, password: e.target.value})} onKeyPress={(e) => e.key === 'Enter' && handleLogin()} className="w-full px-4 py-3 border rounded-lg" placeholder="********" />
+                    <input 
+                      type="password" 
+                      value={loginData.password} 
+                      onChange={(e) => setLoginData({...loginData, password: e.target.value})} 
+                      onKeyPress={(e) => e.key === 'Enter' && handleLogin()} 
+                      className="w-full px-4 py-3 border rounded-lg" 
+                      placeholder="Mot de passe" 
+                    />
+                  </div>
+                  {loginError && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                      {loginError}
+                    </div>
+                  )}
+                  <button 
+                    onClick={handleLogin} 
+                    className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700"
+                  >
+                    Se connecter
+                  </button>
+                  <button 
+                    onClick={() => { 
+                      setShowAdminLogin(false); 
+                      setLoginData({ email: '', password: '' }); 
+                      setLoginError(''); 
+                    }} 
+                    className="w-full text-gray-600 hover:text-gray-800 text-sm"
+                  >
+                    ← Retour
+                  </button>
                 </div>
-                {loginError && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{loginError}</div>}
-                <button onClick={handleLogin} className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700">Se connecter</button>
-                <button onClick={() => { setShowSignup(true); setLoginData({ email: '', password: '' }); setLoginError(''); }} className="w-full text-purple-600 hover:text-purple-700 text-sm font-medium">Créer un compte</button>
+              </div>
+            </div>
+          );
+        }
+
+        if (showSignup) {
+          return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+                <div className="text-center mb-8">
+                  <span className="text-6xl">🎵</span>
+                  <h1 className="text-3xl font-bold text-purple-900 mt-4 mb-2">Haltes Musicales</h1>
+                  <p className="text-gray-600">Créer votre compte</p>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Nom complet *</label>
+                    <input 
+                      type="text" 
+                      value={signupData.name} 
+                      onChange={(e) => setSignupData({...signupData, name: e.target.value})} 
+                      className="w-full px-4 py-3 border rounded-lg" 
+                      placeholder="Dr. Marie Dupont" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                    <input 
+                      type="email" 
+                      value={signupData.email} 
+                      onChange={(e) => setSignupData({...signupData, email: e.target.value})} 
+                      className="w-full px-4 py-3 border rounded-lg" 
+                      placeholder="email@exemple.fr" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe * (min. 8 car.)</label>
+                    <input 
+                      type="password" 
+                      value={signupData.password} 
+                      onChange={(e) => setSignupData({...signupData, password: e.target.value})} 
+                      className="w-full px-4 py-3 border rounded-lg" 
+                      placeholder="********" 
+                      minLength="8" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Type *</label>
+                    <select 
+                      value={signupData.type} 
+                      onChange={(e) => setSignupData({...signupData, type: e.target.value})} 
+                      className="w-full px-4 py-3 border rounded-lg"
+                    >
+                      <option value="professionnel">Psychologue</option>
+                      <option value="invite">Établissement</option>
+                    </select>
+                  </div>
+                  {signupData.type === 'invite' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Établissement</label>
+                      <input 
+                        type="text" 
+                        value={signupData.etablissement} 
+                        onChange={(e) => setSignupData({...signupData, etablissement: e.target.value})} 
+                        className="w-full px-4 py-3 border rounded-lg" 
+                        placeholder="EHPAD Les Jardins" 
+                      />
+                    </div>
+                  )}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <label className="flex items-start gap-3 text-sm">
+                      <input 
+                        type="checkbox" 
+                        checked={signupData.rgpdConsent} 
+                        onChange={(e) => setSignupData({...signupData, rgpdConsent: e.target.checked})} 
+                        className="mt-1" 
+                      />
+                      <span>
+                        J'accepte la{' '}
+                        <button 
+                          onClick={() => setShowRgpdModal(true)} 
+                          className="text-purple-600 underline" 
+                          type="button"
+                        >
+                          politique de confidentialité
+                        </button>
+                        {' '}*
+                      </span>
+                    </label>
+                  </div>
+                  <button 
+                    onClick={handleSignup} 
+                    className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700"
+                  >
+                    Créer mon compte
+                  </button>
+                  <button 
+                    onClick={() => setShowSignup(false)} 
+                    className="w-full text-purple-600 hover:text-purple-700 text-sm font-medium"
+                  >
+                    J'ai déjà un compte
+                  </button>
+                  <button 
+                    onClick={() => setShowAdminLogin(true)} 
+                    className="w-full text-gray-400 hover:text-gray-600 text-xs pt-4 border-t"
+                  >
+                    Accès admin
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+              <div className="text-center mb-8">
+                <span className="text-6xl">🎵</span>
+                <h1 className="text-3xl font-bold text-purple-900 mt-4 mb-2">Haltes Musicales</h1>
+                <p className="text-gray-600">Connexion</p>
+              </div>
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <input 
+                    type="email" 
+                    value={loginData.email} 
+                    onChange={(e) => setLoginData({...loginData, email: e.target.value})} 
+                    className="w-full px-4 py-3 border rounded-lg" 
+                    placeholder="email@exemple.fr" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+                  <input 
+                    type="password" 
+                    value={loginData.password} 
+                    onChange={(e) => setLoginData({...loginData, password: e.target.value})} 
+                    onKeyPress={(e) => e.key === 'Enter' && handleLogin()} 
+                    className="w-full px-4 py-3 border rounded-lg" 
+                    placeholder="********" 
+                  />
+                </div>
+                {loginError && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                    {loginError}
+                  </div>
+                )}
+                <button 
+                  onClick={handleLogin} 
+                  className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700"
+                >
+                  Se connecter
+                </button>
+                <button 
+                  onClick={() => { 
+                    setShowSignup(true); 
+                    setLoginData({ email: '', password: '' }); 
+                    setLoginError(''); 
+                  }} 
+                  className="w-full text-purple-600 hover:text-purple-700 text-sm font-medium"
+                >
+                  Créer un compte
+                </button>
               </div>
             </div>
           </div>
@@ -428,7 +567,12 @@
             <div className="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-2xl max-h-[80vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-2xl font-bold text-gray-900">Politique de confidentialité</h3>
-                <button onClick={() => setShowRgpdModal(false)} className="text-gray-400 hover:text-gray-600"><span className="text-2xl">×</span></button>
+                <button 
+                  onClick={() => setShowRgpdModal(false)} 
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <span className="text-2xl">×</span>
+                </button>
               </div>
               <div className="space-y-4 text-sm text-gray-700">
                 <p>Haltes Musicales est responsable du traitement de vos données personnelles conformément au RGPD.</p>
@@ -437,7 +581,12 @@
                 <p>Contact : contact@haltes-musicales.fr</p>
               </div>
               <div className="mt-6 flex justify-end">
-                <button onClick={() => setShowRgpdModal(false)} className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Fermer</button>
+                <button 
+                  onClick={() => setShowRgpdModal(false)} 
+                  className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                >
+                  Fermer
+                </button>
               </div>
             </div>
           </div>
@@ -462,21 +611,59 @@
                     <p className="text-sm text-gray-600">Gestion des utilisateurs</p>
                   </div>
                 </div>
-                <button onClick={() => { setCurrentUser(null); setShowAdminPanel(false); setShowSignup(true); }} className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"><Icons.LogOut />Déconnexion</button>
+                <button 
+                  onClick={() => { 
+                    setCurrentUser(null); 
+                    setShowAdminPanel(false); 
+                    setShowSignup(true); 
+                  }} 
+                  className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+                >
+                  <Icons.LogOut />
+                  Déconnexion
+                </button>
               </div>
             </header>
             <div className="max-w-7xl mx-auto px-4 py-6">
               <div className="bg-white rounded-xl shadow p-6 mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Ajouter un utilisateur</h2>
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                  <input type="text" placeholder="Nom" value={newUser.name} onChange={(e) => setNewUser({...newUser, name: e.target.value})} className="px-4 py-2 border rounded-lg" />
-                  <input type="email" placeholder="Email" value={newUser.email} onChange={(e) => setNewUser({...newUser, email: e.target.value})} className="px-4 py-2 border rounded-lg" />
-                  <input type="password" placeholder="Mot de passe" value={newUser.password} onChange={(e) => setNewUser({...newUser, password: e.target.value})} className="px-4 py-2 border rounded-lg" />
-                  <select value={newUser.type} onChange={(e) => setNewUser({...newUser, type: e.target.value})} className="px-4 py-2 border rounded-lg">
+                  <input 
+                    type="text" 
+                    placeholder="Nom" 
+                    value={newUser.name} 
+                    onChange={(e) => setNewUser({...newUser, name: e.target.value})} 
+                    className="px-4 py-2 border rounded-lg" 
+                  />
+                  <input 
+                    type="email" 
+                    placeholder="Email" 
+                    value={newUser.email} 
+                    onChange={(e) => setNewUser({...newUser, email: e.target.value})} 
+                    className="px-4 py-2 border rounded-lg" 
+                  />
+                  <input 
+                    type="password" 
+                    placeholder="Mot de passe" 
+                    value={newUser.password} 
+                    onChange={(e) => setNewUser({...newUser, password: e.target.value})} 
+                    className="px-4 py-2 border rounded-lg" 
+                  />
+                  <select 
+                    value={newUser.type} 
+                    onChange={(e) => setNewUser({...newUser, type: e.target.value})} 
+                    className="px-4 py-2 border rounded-lg"
+                  >
                     <option value="professionnel">Psychologue</option>
                     <option value="invite">Établissement</option>
                   </select>
-                  <button onClick={handleAddUser} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2"><Icons.Plus />Ajouter</button>
+                  <button 
+                    onClick={handleAddUser} 
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2"
+                  >
+                    <Icons.Plus />
+                    Ajouter
+                  </button>
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-6">
@@ -489,7 +676,12 @@
                           <p className="font-medium text-gray-900">{user.name}</p>
                           <p className="text-sm text-gray-600">{user.email}</p>
                         </div>
-                        <button onClick={() => handleDeleteUser(user.id, 'professionnel')} className="text-red-600 hover:text-red-700"><Icons.Trash /></button>
+                        <button 
+                          onClick={() => handleDeleteUser(user.id, 'professionnel')} 
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Icons.Trash />
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -504,7 +696,12 @@
                           <p className="text-sm text-gray-600">{user.email}</p>
                           {user.etablissement && <p className="text-xs text-gray-500">{user.etablissement}</p>}
                         </div>
-                        <button onClick={() => handleDeleteUser(user.id, 'invite')} className="text-red-600 hover:text-red-700"><Icons.Trash /></button>
+                        <button 
+                          onClick={() => handleDeleteUser(user.id, 'invite')} 
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Icons.Trash />
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -526,7 +723,10 @@
 
           <header className="bg-white shadow-sm border-b sticky top-0 z-40">
             <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-              <button onClick={() => setExpandedIntervention(null)} className="flex items-center gap-4 hover:opacity-80">
+              <button 
+                onClick={() => setExpandedIntervention(null)} 
+                className="flex items-center gap-4 hover:opacity-80"
+              >
                 <span className="text-4xl">🎵</span>
                 <div>
                   <h1 className="text-2xl font-bold text-purple-900">Haltes Musicales</h1>
@@ -536,7 +736,15 @@
                   </p>
                 </div>
               </button>
-              <button onClick={() => { setCurrentUser(null); setInterventions({}); setExpandedIntervention(null); setShowSignup(true); }} className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
+              <button 
+                onClick={() => { 
+                  setCurrentUser(null); 
+                  setInterventions({}); 
+                  setExpandedIntervention(null); 
+                  setShowSignup(true); 
+                }} 
+                className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+              >
                 <Icons.LogOut />
                 <span className="hidden sm:inline">Déconnexion</span>
               </button>
@@ -549,7 +757,10 @@
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold text-gray-900">Mes Interventions ({interventionsList.length})</h2>
                   {currentUser.type === 'professionnel' && (
-                    <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-lg">
+                    <button 
+                      onClick={() => setShowAddModal(true)} 
+                      className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-lg"
+                    >
                       <Icons.Plus />
                       Nouvelle intervention
                     </button>
@@ -563,7 +774,10 @@
                       <h3 className="text-xl font-semibold text-gray-900 mb-2 mt-4">Aucune intervention</h3>
                       <p className="text-gray-500 mb-6">Commencez par ajouter une intervention</p>
                       {currentUser.type === 'professionnel' && (
-                        <button onClick={() => setShowAddModal(true)} className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                        <button 
+                          onClick={() => setShowAddModal(true)} 
+                          className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                        >
                           <Icons.Plus />
                           Créer une intervention
                         </button>
@@ -582,7 +796,10 @@
                               {intervention.beneficiaires?.length || 0} bénéficiaire(s)
                             </p>
                           </div>
-                          <button onClick={() => setExpandedIntervention(intervention.id)} className="text-purple-600 hover:text-purple-700 font-medium">
+                          <button 
+                            onClick={() => setExpandedIntervention(intervention.id)} 
+                            className="text-purple-600 hover:text-purple-700 font-medium"
+                          >
                             Voir détails →
                           </button>
                         </div>
@@ -592,11 +809,54 @@
                 </div>
               </>
             ) : (
-              <div className="bg-white rounded-xl p-12 text-center shadow">
-                <button onClick={() => setExpandedIntervention(null)} className="mb-4 text-purple-600 hover:text-purple-700 font-medium">
+              <div>
+                <button 
+                  onClick={() => setExpandedIntervention(null)} 
+                  className="mb-4 text-purple-600 hover:text-purple-700 font-medium"
+                >
                   ← Retour aux interventions
                 </button>
-                <p className="text-gray-600">Détails de l'intervention - Fonctionnalité complète en cours d'intégration</p>
+                <div className="bg-white rounded-xl shadow p-6 mb-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">
+                        {interventions[expandedIntervention]?.lieu}
+                      </h2>
+                      <p className="text-gray-600 mt-1">
+                        {interventions[expandedIntervention]?.date && 
+                          new Date(interventions[expandedIntervention].date).toLocaleDateString('fr-FR', { 
+                            weekday: 'long', 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          })
+                        } à {interventions[expandedIntervention]?.time}
+                      </p>
+                    </div>
+                    {currentUser.type === 'professionnel' && (
+                      <button 
+                        onClick={() => handleAddBeneficiaire(expandedIntervention)} 
+                        className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2"
+                      >
+                        <Icons.Plus />
+                        Ajouter bénéficiaire
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {(!interventions[expandedIntervention]?.beneficiaires || 
+                  interventions[expandedIntervention]?.beneficiaires.length === 0) ? (
+                  <div className="bg-white rounded-xl p-12 text-center shadow">
+                    <p className="text-gray-400">Aucun bénéficiaire ajouté</p>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-xl p-12 text-center shadow">
+                    <p className="text-gray-600">
+                      {interventions[expandedIntervention]?.beneficiaires.length} bénéficiaire(s) - 
+                      Détails complets en développement
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -606,15 +866,46 @@
               <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold text-gray-900">Nouvelle intervention</h3>
-                  <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600"><span className="text-2xl">×</span></button>
+                  <button 
+                    onClick={() => setShowAddModal(false)} 
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <span className="text-2xl">×</span>
+                  </button>
                 </div>
                 <div className="space-y-4">
-                  <input type="date" value={newIntervention.date} onChange={(e) => setNewIntervention({...newIntervention, date: e.target.value})} className="w-full px-4 py-2 border rounded-lg" />
-                  <input type="time" value={newIntervention.time} onChange={(e) => setNewIntervention({...newIntervention, time: e.target.value})} className="w-full px-4 py-2 border rounded-lg" />
-                  <input type="text" value={newIntervention.lieu} placeholder="Lieu" onChange={(e) => setNewIntervention({...newIntervention, lieu: e.target.value})} className="w-full px-4 py-2 border rounded-lg" />
+                  <input 
+                    type="date" 
+                    value={newIntervention.date} 
+                    onChange={(e) => setNewIntervention({...newIntervention, date: e.target.value})} 
+                    className="w-full px-4 py-2 border rounded-lg" 
+                  />
+                  <input 
+                    type="time" 
+                    value={newIntervention.time} 
+                    onChange={(e) => setNewIntervention({...newIntervention, time: e.target.value})} 
+                    className="w-full px-4 py-2 border rounded-lg" 
+                  />
+                  <input 
+                    type="text" 
+                    value={newIntervention.lieu} 
+                    placeholder="Lieu" 
+                    onChange={(e) => setNewIntervention({...newIntervention, lieu: e.target.value})} 
+                    className="w-full px-4 py-2 border rounded-lg" 
+                  />
                   <div className="flex gap-3">
-                    <button onClick={() => setShowAddModal(false)} className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">Annuler</button>
-                    <button onClick={handleAddIntervention} className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Ajouter</button>
+                    <button 
+                      onClick={() => setShowAddModal(false)} 
+                      className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50"
+                    >
+                      Annuler
+                    </button>
+                    <button 
+                      onClick={handleAddIntervention} 
+                      className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                    >
+                      Ajouter
+                    </button>
                   </div>
                 </div>
               </div>
@@ -627,84 +918,4 @@
     ReactDOM.render(<HaltesMusicalesApp />, document.getElementById('root'));
   </script>
 </body>
-</html>mb-2">Email administrateur</label>
-                    <input type="text" value={loginData.email} onChange={(e) => setLoginData({...loginData, email: e.target.value})} className="w-full px-4 py-3 border rounded-lg" placeholder="admin" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
-                    <input type="password" value={loginData.password} onChange={(e) => setLoginData({...loginData, password: e.target.value})} onKeyPress={(e) => e.key === 'Enter' && handleLogin()} className="w-full px-4 py-3 border rounded-lg" placeholder="Mot de passe" />
-                  </div>
-                  {loginError && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{loginError}</div>}
-                  <button onClick={handleLogin} className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700">Se connecter</button>
-                  <button onClick={() => { setShowAdminLogin(false); setLoginData({ email: '', password: '' }); setLoginError(''); }} className="w-full text-gray-600 hover:text-gray-800 text-sm">← Retour</button>
-                </div>
-              </div>
-            </div>
-          );
-        }
-
-        if (showSignup) {
-          return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-                <div className="text-center mb-8">
-                  <span className="text-6xl">🎵</span>
-                  <h1 className="text-3xl font-bold text-purple-900 mt-4 mb-2">Haltes Musicales</h1>
-                  <p className="text-gray-600">Créer votre compte</p>
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Nom complet *</label>
-                    <input type="text" value={signupData.name} onChange={(e) => setSignupData({...signupData, name: e.target.value})} className="w-full px-4 py-3 border rounded-lg" placeholder="Dr. Marie Dupont" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                    <input type="email" value={signupData.email} onChange={(e) => setSignupData({...signupData, email: e.target.value})} className="w-full px-4 py-3 border rounded-lg" placeholder="email@exemple.fr" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe * (min. 8 car.)</label>
-                    <input type="password" value={signupData.password} onChange={(e) => setSignupData({...signupData, password: e.target.value})} className="w-full px-4 py-3 border rounded-lg" placeholder="********" minLength="8" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Type *</label>
-                    <select value={signupData.type} onChange={(e) => setSignupData({...signupData, type: e.target.value})} className="w-full px-4 py-3 border rounded-lg">
-                      <option value="professionnel">Psychologue</option>
-                      <option value="invite">Établissement</option>
-                    </select>
-                  </div>
-                  {signupData.type === 'invite' && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Établissement</label>
-                      <input type="text" value={signupData.etablissement} onChange={(e) => setSignupData({...signupData, etablissement: e.target.value})} className="w-full px-4 py-3 border rounded-lg" placeholder="EHPAD Les Jardins" />
-                    </div>
-                  )}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <label className="flex items-start gap-3 text-sm">
-                      <input type="checkbox" checked={signupData.rgpdConsent} onChange={(e) => setSignupData({...signupData, rgpdConsent: e.target.checked})} className="mt-1" />
-                      <span>J'accepte la <button onClick={() => setShowRgpdModal(true)} className="text-purple-600 underline" type="button">politique de confidentialité</button> *</span>
-                    </label>
-                  </div>
-                  <button onClick={handleSignup} className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700">Créer mon compte</button>
-                  <button onClick={() => setShowSignup(false)} className="w-full text-purple-600 hover:text-purple-700 text-sm font-medium">J'ai déjà un compte</button>
-                  <button onClick={() => setShowAdminLogin(true)} className="w-full text-gray-400 hover:text-gray-600 text-xs pt-4 border-t">Accès admin</button>
-                </div>
-              </div>
-            </div>
-          );
-        }
-
-        return (
-          <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-              <div className="text-center mb-8">
-                <span className="text-6xl">🎵</span>
-                <h1 className="text-3xl font-bold text-purple-900 mt-4 mb-2">Haltes Musicales</h1>
-                <p className="text-gray-600">Connexion</p>
-              </div>
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                  <input type="email" value={loginData.email} onChange={(e) => setLoginData({...loginData, email: e.target.value})} className="w-full px-4 py-3 border rounded-lg" placeholder="email@exemple.fr" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 
+</html>
