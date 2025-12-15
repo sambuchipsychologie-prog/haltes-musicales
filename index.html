@@ -99,7 +99,8 @@
       const [expandedIntervention, setExpandedIntervention] = React.useState(null);
       const [showAddModal, setShowAddModal] = React.useState(false);
       const [newIntervention, setNewIntervention] = React.useState({ date: '', time: '', lieu: '' });
-      const [newUser, setNewUser] = React.useState({ name: '', email: '', password: '', type: 'professionnel' });
+      // newUser now includes etablissement to match signup logic
+      const [newUser, setNewUser] = React.useState({ name: '', email: '', password: '', type: 'professionnel', etablissement: '' });
 
       // --- CHARGEMENT DES DONNÉES ---
       React.useEffect(() => {
@@ -230,7 +231,8 @@
       };
 
       // --- ADMIN ---
-      const handleAddUser = () => {
+      // minimal change: hash the password before saving so login (which compares hashes) works
+      const handleAddUser = async () => {
         if (!newUser.name || !newUser.password || !newUser.email) {
           showNotif('Remplissez tous les champs', 'error');
           return;
@@ -240,23 +242,30 @@
           showNotif('Cet email existe déjà', 'error');
           return;
         }
-        const userData = { ...users };
-        const id = Date.now().toString();
-        const userToAdd = {
-          ...newUser,
-          id,
-          createdAt: new Date().toISOString(),
-          rgpdConsent: true
-        };
-        if (newUser.type === 'professionnel') {
-          userData.professionnels.push(userToAdd);
-        } else {
-          userData.invites.push(userToAdd);
+        try {
+          const hashedPassword = await hashPassword(newUser.password);
+          const userData = { ...users };
+          const id = Date.now().toString();
+          const userToAdd = {
+            ...newUser,
+            password: hashedPassword,
+            id,
+            createdAt: new Date().toISOString(),
+            rgpdConsent: true,
+            etablissement: newUser.etablissement || ''
+          };
+          if (newUser.type === 'professionnel') {
+            userData.professionnels.push(userToAdd);
+          } else {
+            userData.invites.push(userToAdd);
+          }
+          localStorage.setItem('haltes_users', JSON.stringify(userData));
+          setUsers(userData);
+          setNewUser({ name: '', email: '', password: '', type: 'professionnel', etablissement: '' });
+          showNotif('Utilisateur ajouté !');
+        } catch (e) {
+          showNotif('Erreur lors de l\'ajout de l\'utilisateur', 'error');
         }
-        localStorage.setItem('haltes_users', JSON.stringify(userData));
-        setUsers(userData);
-        setNewUser({ name: '', email: '', password: '', type: 'professionnel' });
-        showNotif('Utilisateur ajouté !');
       };
 
       const handleDeleteUser = (userId, type) => {
@@ -1029,7 +1038,8 @@
 
     // --- RENDU ---
     const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(React.createElement(HaltesMusicalesApp));
+    // rendu sur la fonction d'origine (trame conservée)
+    root.render(React.createElement(renderApp));
   </script>
 </body>
 </html>
