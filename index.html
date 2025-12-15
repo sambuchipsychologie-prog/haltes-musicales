@@ -10,313 +10,277 @@
   <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  </style>
 </head>
 <body>
   <div id="root"></div>
-  <script type="text/babel" src="src/App.jsx"></script>
+
+  <script type="text/babel">
+    // --- ICONS ---
+    const Icons = {
+      Calendar: ({ size = 24 }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      ),
+      LogOut: ({ size = 20 }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      ),
+      Plus: ({ size = 20 }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      ),
+      Lock: ({ size = 18 }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      ),
+      Users: ({ size = 14 }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      ),
+      Trash: ({ size = 18 }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+      ),
+      FileDown: ({ size = 20 }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <polyline points="9 15 12 18 15 15"/>
+        </svg>
+      )
+    };
+
+    // --- APP ---
+    const { useState, useEffect } = React;
+
+    function HaltesMusicalesApp() {
+      const [currentUser, setCurrentUser] = useState(null);
+      const [users, setUsers] = useState({ professionnels: [], invites: [] });
+      const [interventions, setInterventions] = useState({});
+      const [notification, setNotification] = useState(null);
+      const [isLoading, setIsLoading] = useState(true);
+      const [loginData, setLoginData] = useState({ email: '', password: '' });
+      const [loginError, setLoginError] = useState('');
+      const [showSignup, setShowSignup] = useState(true);
+      const [showAdminLogin, setShowAdminLogin] = useState(false);
+      const [showAdminPanel, setShowAdminPanel] = useState(false);
+      const [expandedIntervention, setExpandedIntervention] = useState(null);
+      const [showAddModal, setShowAddModal] = useState(false);
+      const [newIntervention, setNewIntervention] = useState({ date: '', time: '', lieu: '' });
+
+      // --- Fonctions utilitaires ---
+      async function hashPassword(password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+
+      function exportToCSV(data, filename = 'interventions.csv') {
+        const csv = Papa.unparse(data);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      function exportToPDF(intervention) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text(`Intervention: ${intervention.lieu}`, 10, 10);
+        doc.text(`Date: ${new Date(intervention.date).toLocaleDateString('fr-FR')}`, 10, 20);
+        doc.save(`intervention_${intervention.id}.pdf`);
+      }
+
+      // --- Chargement des données ---
+      useEffect(() => {
+        const usersData = localStorage.getItem('haltes_users');
+        if (usersData) setUsers(JSON.parse(usersData));
+        setIsLoading(false);
+      }, []);
+
+      // --- Connexion ---
+      const handleLogin = async () => {
+        if (loginData.email === 'admin' && loginData.password === 'ADMIN2024') {
+          setCurrentUser({ type: 'admin', name: 'Administrateur', id: 'admin' });
+          setShowAdminPanel(true);
+          return;
+        }
+        const allUsers = [...users.professionnels, ...users.invites];
+        const user = allUsers.find(u => u.email === loginData.email);
+        if (!user) {
+          setLoginError('Email ou mot de passe incorrect');
+          return;
+        }
+        const hashedInput = await hashPassword(loginData.password);
+        if (hashedInput !== user.password) {
+          setLoginError('Email ou mot de passe incorrect');
+          return;
+        }
+        setCurrentUser(user);
+        const interventionsData = localStorage.getItem(`interventions_${user.id}`);
+        if (interventionsData) setInterventions(JSON.parse(interventionsData));
+        showNotif(`Bienvenue ${user.name} !`);
+      };
+
+      // --- Inscription ---
+      const handleSignup = async (signupData) => {
+        const hashedPassword = await hashPassword(signupData.password);
+        const userToAdd = { ...signupData, password: hashedPassword, id: Date.now().toString() };
+        const updatedUsers = { ...users };
+        updatedUsers[signupData.type === 'professionnel' ? 'professionnels' : 'invites'].push(userToAdd);
+        localStorage.setItem('haltes_users', JSON.stringify(updatedUsers));
+        setUsers(updatedUsers);
+        setCurrentUser(userToAdd);
+        showNotif('Compte créé avec succès !');
+      };
+
+      // --- Notification ---
+      const showNotif = (msg, type = 'success') => {
+        setNotification({ msg, type });
+        setTimeout(() => setNotification(null), 3000);
+      };
+
+      // --- UI ---
+      if (isLoading) return <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center">Chargement...</div>;
+      if (!currentUser) return (
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+            <div className="text-center mb-8">
+              <span className="text-6xl">🎵</span>
+              <h1 className="text-3xl font-bold text-purple-900 mt-4 mb-2">Haltes Musicales</h1>
+              <p className="text-gray-600">Connexion</p>
+            </div>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input
+                  type="email"
+                  value={loginData.email}
+                  onChange={(e) => setLoginData({...loginData, email: e.target.value})}
+                  className="w-full px-4 py-3 border rounded-lg"
+                  placeholder="email@exemple.fr"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+                <input
+                  type="password"
+                  value={loginData.password}
+                  onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                  onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                  className="w-full px-4 py-3 border rounded-lg"
+                  placeholder="********"
+                />
+              </div>
+              {loginError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                  {loginError}
+                </div>
+              )}
+              <button
+                onClick={handleLogin}
+                className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700"
+              >
+                Se connecter
+              </button>
+              <button
+                onClick={() => setShowSignup(true)}
+                className="w-full text-purple-600 hover:text-purple-700 text-sm font-medium"
+              >
+                Créer un compte
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+
+      // --- Admin Panel ---
+      if (currentUser.type === 'admin' && showAdminPanel) {
+        return (
+          <div className="min-h-screen bg-gray-50">
+            {notification && (
+              <div className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg ${notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                {notification.type === 'success' && <span>✓</span>}
+                <span>{notification.msg}</span>
+              </div>
+            )}
+            <header className="bg-white shadow-sm border-b sticky top-0 z-40">
+              <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <span className="text-4xl">🎵</span>
+                  <div>
+                    <h1 className="text-2xl font-bold text-purple-900">Administration</h1>
+                    <p className="text-sm text-gray-600">Gestion des utilisateurs</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setCurrentUser(null); setShowAdminPanel(false); }}
+                  className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+                >
+                  <Icons.LogOut />
+                  Déconnexion
+                </button>
+              </div>
+            </header>
+            <div className="max-w-7xl mx-auto px-4 py-6">
+              <div className="bg-white rounded-xl shadow p-6 mb-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Ajouter un utilisateur</h2>
+                {/* Formulaire d'ajout d'utilisateur */}
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Liste des psychologues et établissements */}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // --- Interface principale ---
+      return (
+        <div className="min-h-screen bg-gray-50">
+          {notification && (
+            <div className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg ${notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+              {notification.type === 'success' && <span>✓</span>}
+              <span>{notification.msg}</span>
+            </div>
+          )}
+          <header className="bg-white shadow-sm border-b sticky top-0 z-40">
+            {/* Header */}
+          </header>
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            {/* Liste des interventions ou détails */}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<HaltesMusicalesApp />, document.getElementById('root'));
+  </script>
 </body>
 </html>
-// src/App.jsx
-const { useState, useEffect } = React;
-
-// Icons (identiques à ton code original)
-const Icons = {
-  Calendar: ({ size = 24 }) => (/* ... */),
-  LogOut: ({ size = 20 }) => (/* ... */),
-  Plus: ({ size = 20 }) => (/* ... */),
-  Lock: ({ size = 18 }) => (/* ... */),
-  Users: ({ size = 14 }) => (/* ... */),
-  Trash: ({ size = 18 }) => (/* ... */),
-  FileDown: ({ size = 20 }) => (/* ... */),
-};
-
-// Import des utils
-const { hashPassword } = window.HaltesUtils.auth;
-const { exportToCSV, exportToPDF } = window.HaltesUtils.export;
-const { loadUsers, saveUsers, loadInterventions, saveInterventions } = window.HaltesUtils.storage;
-
-// Import des composants
-const LoginForm = window.HaltesComponents.LoginForm;
-const AdminPanel = window.HaltesComponents.AdminPanel;
-const InterventionList = window.HaltesComponents.InterventionList;
-const BeneficiaireForm = window.HaltesComponents.BeneficiaireForm;
-const Notification = window.HaltesComponents.Notification;
-
-// App principale
-function HaltesMusicalesApp() {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [users, setUsers] = useState({ professionnels: [], invites: [] });
-  const [interventions, setInterventions] = useState({});
-  const [notification, setNotification] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [loginError, setLoginError] = useState('');
-  const [showSignup, setShowSignup] = useState(true);
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [expandedIntervention, setExpandedIntervention] = useState(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [newIntervention, setNewIntervention] = useState({ date: '', time: '', lieu: '' });
-
-  // Chargement initial
-  useEffect(() => {
-    setUsers(loadUsers());
-    setIsLoading(false);
-  }, []);
-
-  // Connexion sécurisée
-  const handleLogin = async () => {
-    if (loginData.email === 'admin' && loginData.password === 'ADMIN2024') {
-      setCurrentUser({ type: 'admin', name: 'Administrateur', id: 'admin' });
-      setShowAdminPanel(true);
-      return;
-    }
-    const allUsers = [...users.professionnels, ...users.invites];
-    const user = allUsers.find(u => u.email === loginData.email);
-    if (!user) {
-      setLoginError('Email ou mot de passe incorrect');
-      return;
-    }
-    const hashedInput = await hashPassword(loginData.password);
-    if (hashedInput !== user.password) {
-      setLoginError('Email ou mot de passe incorrect');
-      return;
-    }
-    setCurrentUser(user);
-    setInterventions(loadInterventions(user.id));
-    showNotif(`Bienvenue ${user.name} !`);
-  };
-
-  // Inscription sécurisée
-  const handleSignup = async (signupData) => {
-    const hashedPassword = await hashPassword(signupData.password);
-    const userToAdd = { ...signupData, password: hashedPassword, id: Date.now().toString() };
-    const updatedUsers = { ...users };
-    updatedUsers[signupData.type === 'professionnel' ? 'professionnels' : 'invites'].push(userToAdd);
-    saveUsers(updatedUsers);
-    setUsers(updatedUsers);
-    setCurrentUser(userToAdd);
-    showNotif('Compte créé avec succès !');
-  };
-
-  // Export CSV
-  const handleExportCSV = () => {
-    const data = Object.values(interventions).map(i => ({
-      lieu: i.lieu,
-      date: new Date(i.date).toLocaleDateString('fr-FR'),
-      beneficiaires: i.beneficiaires?.length || 0,
-    }));
-    exportToCSV(data);
-  };
-
-  // Export PDF
-  const handleExportPDF = (intervention) => {
-    exportToPDF(intervention);
-  };
-
-  // Notification
-  const showNotif = (msg, type = 'success') => {
-    setNotification({ msg, type });
-    setTimeout(() => setNotification(null), 3000);
-  };
-
-  // Render
-  if (isLoading) return <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center">Chargement...</div>;
-  if (!currentUser) return <LoginForm onLogin={handleLogin} onSignup={handleSignup} error={loginError} setShowSignup={setShowSignup} setShowAdminLogin={setShowAdminLogin} />;
-  if (currentUser.type === 'admin' && showAdminPanel) return <AdminPanel users={users} setUsers={setUsers} setCurrentUser={setCurrentUser} />;
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Notification notification={notification} />
-      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
-        {/* Header identique à ton code */}
-      </header>
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {!expandedIntervention ? (
-          <InterventionList
-            interventions={interventions}
-            currentUser={currentUser}
-            setExpandedIntervention={setExpandedIntervention}
-            setShowAddModal={setShowAddModal}
-            onExportCSV={handleExportCSV}
-          />
-        ) : (
-          <BeneficiaireForm
-            intervention={interventions[expandedIntervention]}
-            setInterventions={setInterventions}
-            currentUser={currentUser}
-            setExpandedIntervention={setExpandedIntervention}
-            onExportPDF={handleExportPDF}
-          />
-        )}
-      </div>
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          {/* Modal identique à ton code */}
-        </div>
-      )}
-    </div>
-  );
-}
-
-ReactDOM.render(<HaltesMusicalesApp />, document.getElementById('root'));
-// src/utils/auth.js
-async function hashPassword(password) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-window.HaltesUtils = window.HaltesUtils || {};
-window.HaltesUtils.auth = { hashPassword };
-// src/utils/export.js
-function exportToCSV(data, filename = 'interventions.csv') {
-  const csv = Papa.unparse(data);
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.setAttribute('download', filename);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
-function exportToPDF(intervention) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.text(`Intervention: ${intervention.lieu}`, 10, 10);
-  doc.text(`Date: ${new Date(intervention.date).toLocaleDateString('fr-FR')}`, 10, 20);
-  doc.save(`intervention_${intervention.id}.pdf`);
-}
-
-window.HaltesUtils = window.HaltesUtils || {};
-window.HaltesUtils.export = { exportToCSV, exportToPDF };
-// src/utils/storage.js
-function loadUsers() {
-  const usersData = localStorage.getItem('haltes_users');
-  return usersData ? JSON.parse(usersData) : { professionnels: [], invites: [] };
-}
-
-function saveUsers(users) {
-  localStorage.setItem('haltes_users', JSON.stringify(users));
-}
-
-function loadInterventions(userId) {
-  const data = localStorage.getItem(`interventions_${userId}`);
-  return data ? JSON.parse(data) : {};
-}
-
-function saveInterventions(userId, interventions) {
-  localStorage.setItem(`interventions_${userId}`, JSON.stringify(interventions));
-}
-
-window.HaltesUtils = window.HaltesUtils || {};
-window.HaltesUtils.storage = { loadUsers, saveUsers, loadInterventions, saveInterventions };
-// src/components/LoginForm.jsx
-const { useState } = React;
-
-function LoginForm({ onLogin, onSignup, error, setShowSignup, setShowAdminLogin }) {
-  const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [signupData, setSignupData] = useState({ name: '', email: '', password: '', type: 'professionnel', etablissement: '', rgpdConsent: false });
-  const [showSignup, setShowSignupLocal] = useState(true);
-
-  return (
-    // UI identique à ton code original, mais avec appel à onLogin/onSignup
-    <div>{/* ... */}</div>
-  );
-}
-
-window.HaltesComponents = window.HaltesComponents || {};
-window.HaltesComponents.LoginForm = LoginForm;
-// src/components/InterventionList.jsx
-const { useState } = React;
-
-function InterventionList({ interventions, currentUser, setExpandedIntervention, setShowAddModal, onExportCSV }) {
-  const interventionsList = Object.values(interventions).sort((a, b) => new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time));
-
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Mes Interventions ({interventionsList.length})</h2>
-        {currentUser.type === 'professionnel' && (
-          <div className="flex gap-3">
-            <button onClick={onExportCSV} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-              <window.Icons.FileDown /> Exporter CSV
-            </button>
-            <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-              <window.Icons.Plus /> Nouvelle intervention
-            </button>
-          </div>
-        )}
-      </div>
-      {/* Liste identique à ton code */}
-    </div>
-  );
-}
-
-window.HaltesComponents = window.HaltesComponents || {};
-window.HaltesComponents.InterventionList = InterventionList;
-// src/components/BeneficiaireForm.jsx
-function BeneficiaireForm({ intervention, setInterventions, currentUser, setExpandedIntervention, onExportPDF }) {
-  return (
-    <div>
-      <button onClick={() => setExpandedIntervention(null)} className="mb-4 text-purple-600 hover:text-purple-700 font-medium">← Retour</button>
-      <div className="bg-white rounded-xl shadow p-6 mb-6">
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">{intervention.lieu}</h2>
-            <p className="text-gray-600 mt-1">
-              {new Date(intervention.date).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} à {intervention.time}
-            </p>
-          </div>
-          <button onClick={() => onExportPDF(intervention)} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2">
-            <window.Icons.FileDown /> Exporter PDF
-          </button>
-        </div>
-        {/* Détails des bénéficiaires */}
-      </div>
-    </div>
-  );
-}
-
-window.HaltesComponents = window.HaltesComponents || {};
-window.HaltesComponents.BeneficiaireForm = BeneficiaireForm;
-// src/components/Notification.jsx
-function Notification({ notification }) {
-  if (!notification) return null;
-  return (
-    <div className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg ${notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
-      {notification.type === 'success' && <span>✓</span>}
-      <span>{notification.msg}</span>
-    </div>
-  );
-}
-
-window.HaltesComponents = window.HaltesComponents || {};
-window.HaltesComponents.Notification = Notification;
-// src/components/AdminPanel.jsx
-function AdminPanel({ users, setUsers, setCurrentUser }) {
-  // UI identique à ton code original
-  return <div>{/* ... */}</div>;
-}
-
-window.HaltesComponents = window.HaltesComponents || {};
-window.HaltesComponents.AdminPanel = AdminPanel;
-# Haltes Musicales
-
-Outil professionnel de suivi des interventions musicales en EHPAD et établissements de santé.
-
-## Fonctionnalités
-- Gestion des utilisateurs (psychologues, établissements)
-- Suivi des interventions et bénéficiaires
-- Export CSV/PDF
-- Stockage local sécurisé
-
-## Installation
-1. Cloner ce dépôt
-2. Ouvrir `index.html` dans un navigateur (ou déployer sur Netlify/Vercel)
-
-## Déploiement
-- Pour une version en ligne : [Netlify Drop](https://app.netlify.com/drop)
-- Pour un backend : contacter le développeur
