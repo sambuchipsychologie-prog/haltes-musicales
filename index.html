@@ -113,6 +113,7 @@
         if (currentUser && currentUser.type !== 'admin') {
           const data = localStorage.getItem(`interventions_${currentUser.id}`);
           if (data) setInterventions(JSON.parse(data));
+          else setInterventions({});
         }
       }, [currentUser]);
 
@@ -292,6 +293,9 @@
 
       // --- UI ---
       const getAccessibleInterventions = () => {
+        // Guard : si aucun utilisateur connecté, ne pas accéder à currentUser.type
+        if (!currentUser) return [];
+
         const allInterventions = Object.values(interventions);
         if (currentUser.type === 'professionnel') {
           return allInterventions.filter(intervention => intervention.createdBy === currentUser.id);
@@ -604,7 +608,7 @@
         );
       }
 
-      if (currentUser.type === 'admin' && showAdminPanel) {
+      if (currentUser && currentUser.type === 'admin' && showAdminPanel) {
         return React.createElement(
           'div',
           { className: "min-h-screen bg-gray-50" },
@@ -800,10 +804,10 @@
                 React.createElement(
                   'p',
                   { className: "text-sm text-gray-600 flex items-center gap-2" },
-                  currentUser.type === 'professionnel' ?
+                  currentUser && currentUser.type === 'professionnel' ?
                     React.createElement('span', { dangerouslySetInnerHTML: { __html: Icons.Users(14) } }) :
                     React.createElement('span', { dangerouslySetInnerHTML: { __html: Icons.Lock(18) } }),
-                  currentUser.name
+                  currentUser ? currentUser.name : ''
                 )
               )
             ),
@@ -832,7 +836,7 @@
               'div',
               { className: "flex justify-between items-center mb-6" },
               React.createElement('h2', { className: "text-2xl font-bold text-gray-900" }, `Mes Interventions (${interventionsList.length})`),
-              currentUser.type === 'professionnel' && React.createElement(
+              currentUser && currentUser.type === 'professionnel' && React.createElement(
                 'div',
                 { className: "flex gap-3" },
                 React.createElement(
@@ -864,7 +868,7 @@
                 React.createElement('div', { dangerouslySetInnerHTML: { __html: Icons.Calendar(64) } }),
                 React.createElement('h3', { className: "text-xl font-semibold text-gray-900 mb-2 mt-4" }, "Aucune intervention"),
                 React.createElement('p', { className: "text-gray-500 mb-6" }, "Commencez par ajouter une intervention"),
-                currentUser.type === 'professionnel' && React.createElement(
+                currentUser && currentUser.type === 'professionnel' && React.createElement(
                   'button',
                   {
                     onClick: () => setShowAddModal(true),
@@ -922,7 +926,7 @@
                   React.createElement('h2', { className: "text-2xl font-bold text-gray-900" }, interventions[expandedIntervention]?.lieu),
                   React.createElement('p', { className: "text-gray-600 mt-1" }, `${interventions[expandedIntervention]?.date && new Date(interventions[expandedIntervention].date).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} à ${interventions[expandedIntervention]?.time}`)
                 ),
-                currentUser.type === 'professionnel' && React.createElement(
+                currentUser && currentUser.type === 'professionnel' && React.createElement(
                   'div',
                   { className: "flex gap-3" },
                   React.createElement(
