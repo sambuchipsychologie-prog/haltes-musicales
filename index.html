@@ -18,6 +18,8 @@
   <div id="root"></div>
 
   <script type="text/babel">
+    const { useState, useEffect } = React;
+
     // --- ICONS ---
     const Icons = {
       Calendar: ({ size = 24 }) => (
@@ -71,9 +73,53 @@
       )
     };
 
-    // --- APP ---
-    const { useState, useEffect } = React;
+    // --- FONCTIONS UTILITAIRES ---
+    async function hashPassword(password) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(password);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
 
+    function exportToCSV(data, filename = 'interventions.csv') {
+      const csv = Papa.unparse(data);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function exportToPDF(intervention) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text(`Intervention: ${intervention.lieu}`, 10, 10);
+      doc.text(`Date: ${new Date(intervention.date).toLocaleDateString('fr-FR')}`, 10, 20);
+      doc.save(`intervention_${intervention.id}.pdf`);
+    }
+
+    function createEmptyEvaluation() {
+      return {
+        id: Date.now().toString() + Math.random(),
+        beneficiaire: { nom: '', prenom: '', dateNaissance: '', sexe: 'Féminin' },
+        pathologies: '',
+        souhaitsMusicaux: '',
+        objectifs: '',
+        compteRenduMut: '',
+        compteRenduEtablissement: '',
+        dates: [
+          { date: '', evaluations: {}, commentaires: {}, label: 'Intervention 1' },
+          { date: '', evaluations: {}, commentaires: {}, label: 'Intervention 2' },
+          { date: '', evaluations: {}, commentaires: {}, label: 'Intervention 3' },
+          { date: '', evaluations: {}, commentaires: {}, label: 'Intervention 4' }
+        ]
+      };
+    }
+
+    // --- APP PRINCIPALE ---
     function HaltesMusicalesApp() {
       const [currentUser, setCurrentUser] = useState(null);
       const [users, setUsers] = useState({ professionnels: [], invites: [] });
@@ -82,53 +128,48 @@
       const [isLoading, setIsLoading] = useState(true);
       const [loginData, setLoginData] = useState({ email: '', password: '' });
       const [loginError, setLoginError] = useState('');
-      const [showSignup, setShowSignup] = useState(true);
+      const [signupData, setSignupData] = useState({
+        name: '',
+        email: '',
+        password: '',
+        type: 'professionnel',
+        etablissement: '',
+        rgpdConsent: false
+      });
+      const [showSignup, setShowSignup] = useState(false);
       const [showAdminLogin, setShowAdminLogin] = useState(false);
       const [showAdminPanel, setShowAdminPanel] = useState(false);
       const [expandedIntervention, setExpandedIntervention] = useState(null);
       const [showAddModal, setShowAddModal] = useState(false);
       const [newIntervention, setNewIntervention] = useState({ date: '', time: '', lieu: '' });
+      const [newUser, setNewUser] = useState({ name: '', email: '', password: '', type: 'professionnel' });
 
-      // --- Fonctions utilitaires ---
-      async function hashPassword(password) {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(password);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-      }
-
-      function exportToCSV(data, filename = 'interventions.csv') {
-        const csv = Papa.unparse(data);
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.setAttribute('download', filename);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-
-      function exportToPDF(intervention) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.text(`Intervention: ${intervention.lieu}`, 10, 10);
-        doc.text(`Date: ${new Date(intervention.date).toLocaleDateString('fr-FR')}`, 10, 20);
-        doc.save(`intervention_${intervention.id}.pdf`);
-      }
-
-      // --- Chargement des données ---
+      // --- CHARGEMENT DES DONNÉES ---
       useEffect(() => {
         const usersData = localStorage.getItem('haltes_users');
         if (usersData) setUsers(JSON.parse(usersData));
         setIsLoading(false);
       }, []);
 
-      // --- Connexion ---
+      useEffect(() => {
+        if (currentUser && currentUser.type !== 'admin') {
+          const data = localStorage.getItem(`interventions_${currentUser.id}`);
+          if (data) setInterventions(JSON.parse(data));
+        }
+      }, [currentUser]);
+
+      // --- NOTIFICATIONS ---
+      const showNotif = (msg, type = 'success') => {
+        setNotification({ msg, type });
+        setTimeout(() => setNotification(null), 3000);
+      };
+
+      // --- CONNEXION ---
       const handleLogin = async () => {
         if (loginData.email === 'admin' && loginData.password === 'ADMIN2024') {
           setCurrentUser({ type: 'admin', name: 'Administrateur', id: 'admin' });
           setShowAdminPanel(true);
+          showNotif('Bienvenue Administrateur !');
           return;
         }
         const allUsers = [...users.professionnels, ...users.invites];
@@ -148,79 +189,395 @@
         showNotif(`Bienvenue ${user.name} !`);
       };
 
-      // --- Inscription ---
-      const handleSignup = async (signupData) => {
-        const hashedPassword = await hashPassword(signupData.password);
-        const userToAdd = { ...signupData, password: hashedPassword, id: Date.now().toString() };
-        const updatedUsers = { ...users };
-        updatedUsers[signupData.type === 'professionnel' ? 'professionnels' : 'invites'].push(userToAdd);
-        localStorage.setItem('haltes_users', JSON.stringify(updatedUsers));
-        setUsers(updatedUsers);
-        setCurrentUser(userToAdd);
-        showNotif('Compte créé avec succès !');
+      // --- INSCRIPTION ---
+      const handleSignup = async () => {
+        if (!signupData.name || !signupData.password || !signupData.email) {
+          showNotif('Remplissez tous les champs obligatoires', 'error');
+          return;
+        }
+        if (signupData.password.length < 8) {
+          showNotif('Le mot de passe doit contenir au moins 8 caractères', 'error');
+          return;
+        }
+        if (!signupData.rgpdConsent) {
+          showNotif('Vous devez accepter la politique de confidentialité', 'error');
+          return;
+        }
+        const allUsers = [...users.professionnels, ...users.invites];
+        if (allUsers.find(u => u.email === signupData.email)) {
+          showNotif('Cet email existe déjà', 'error');
+          return;
+        }
+        try {
+          const hashedPassword = await hashPassword(signupData.password);
+          const userToAdd = {
+            name: signupData.name,
+            email: signupData.email,
+            password: hashedPassword,
+            type: signupData.type,
+            id: Date.now().toString(),
+            etablissement: signupData.etablissement || '',
+            createdAt: new Date().toISOString(),
+            rgpdConsent: true
+          };
+          const updatedUsers = { ...users };
+          if (signupData.type === 'professionnel') {
+            updatedUsers.professionnels.push(userToAdd);
+          } else {
+            updatedUsers.invites.push(userToAdd);
+          }
+          localStorage.setItem('haltes_users', JSON.stringify(updatedUsers));
+          setUsers(updatedUsers);
+          setCurrentUser(userToAdd);
+          showNotif('Compte créé avec succès !');
+          setShowSignup(false);
+        } catch (e) {
+          showNotif('Erreur lors de la création du compte', 'error');
+        }
       };
 
-      // --- Notification ---
-      const showNotif = (msg, type = 'success') => {
-        setNotification({ msg, type });
-        setTimeout(() => setNotification(null), 3000);
+      // --- GESTION DES INTERVENTIONS ---
+      const handleAddIntervention = () => {
+        if (!newIntervention.date || !newIntervention.time || !newIntervention.lieu) {
+          showNotif('Remplissez tous les champs', 'error');
+          return;
+        }
+        const id = Date.now().toString();
+        const updated = {
+          ...interventions,
+          [id]: {
+            ...newIntervention,
+            id,
+            beneficiaires: [],
+            createdBy: currentUser.id,
+            createdByName: currentUser.name,
+            createdByType: currentUser.type,
+            etablissement: currentUser.etablissement || ''
+          }
+        };
+        setInterventions(updated);
+        localStorage.setItem(`interventions_${currentUser.id}`, JSON.stringify(updated));
+        setShowAddModal(false);
+        setNewIntervention({ date: '', time: '', lieu: '' });
+        showNotif('Intervention créée !');
+      };
+
+      const handleAddBeneficiaire = (interventionId) => {
+        const newBenef = createEmptyEvaluation();
+        const updated = { ...interventions };
+        if (!updated[interventionId].beneficiaires) updated[interventionId].beneficiaires = [];
+        updated[interventionId].beneficiaires.push(newBenef);
+        setInterventions(updated);
+        localStorage.setItem(`interventions_${currentUser.id}`, JSON.stringify(updated));
+        showNotif('Bénéficiaire ajouté !');
+      };
+
+      // --- ADMIN ---
+      const handleAddUser = () => {
+        if (!newUser.name || !newUser.password || !newUser.email) {
+          showNotif('Remplissez tous les champs', 'error');
+          return;
+        }
+        const allUsers = [...users.professionnels, ...users.invites];
+        if (allUsers.find(u => u.email === newUser.email)) {
+          showNotif('Cet email existe déjà', 'error');
+          return;
+        }
+        const userData = { ...users };
+        const id = Date.now().toString();
+        const userToAdd = {
+          ...newUser,
+          id,
+          createdAt: new Date().toISOString(),
+          rgpdConsent: true
+        };
+        if (newUser.type === 'professionnel') {
+          userData.professionnels.push(userToAdd);
+        } else {
+          userData.invites.push(userToAdd);
+        }
+        localStorage.setItem('haltes_users', JSON.stringify(userData));
+        setUsers(userData);
+        setNewUser({ name: '', email: '', password: '', type: 'professionnel' });
+        showNotif('Utilisateur ajouté !');
+      };
+
+      const handleDeleteUser = (userId, type) => {
+        const userData = { ...users };
+        if (type === 'professionnel') {
+          userData.professionnels = userData.professionnels.filter(u => u.id !== userId);
+        } else {
+          userData.invites = userData.invites.filter(u => u.id !== userId);
+        }
+        localStorage.setItem('haltes_users', JSON.stringify(userData));
+        setUsers(userData);
+        showNotif('Utilisateur supprimé');
+      };
+
+      // --- EXPORT ---
+      const handleExportCSV = () => {
+        const data = Object.values(interventions).map(i => ({
+          lieu: i.lieu,
+          date: new Date(i.date).toLocaleDateString('fr-FR'),
+          beneficiaires: i.beneficiaires?.length || 0,
+        }));
+        exportToCSV(data);
       };
 
       // --- UI ---
-      if (isLoading) return <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center">Chargement...</div>;
-      if (!currentUser) return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-            <div className="text-center mb-8">
-              <span className="text-6xl">🎵</span>
-              <h1 className="text-3xl font-bold text-purple-900 mt-4 mb-2">Haltes Musicales</h1>
-              <p className="text-gray-600">Connexion</p>
-            </div>
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                <input
-                  type="email"
-                  value={loginData.email}
-                  onChange={(e) => setLoginData({...loginData, email: e.target.value})}
-                  className="w-full px-4 py-3 border rounded-lg"
-                  placeholder="email@exemple.fr"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
-                <input
-                  type="password"
-                  value={loginData.password}
-                  onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                  onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                  className="w-full px-4 py-3 border rounded-lg"
-                  placeholder="********"
-                />
-              </div>
-              {loginError && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                  {loginError}
-                </div>
-              )}
-              <button
-                onClick={handleLogin}
-                className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700"
-              >
-                Se connecter
-              </button>
-              <button
-                onClick={() => setShowSignup(true)}
-                className="w-full text-purple-600 hover:text-purple-700 text-sm font-medium"
-              >
-                Créer un compte
-              </button>
-            </div>
-          </div>
-        </div>
+      const getAccessibleInterventions = () => {
+        const allInterventions = Object.values(interventions);
+        if (currentUser.type === 'professionnel') {
+          return allInterventions.filter(intervention => intervention.createdBy === currentUser.id);
+        } else if (currentUser.type === 'invite') {
+          return allInterventions.filter(intervention =>
+            intervention.createdBy === currentUser.id ||
+            intervention.etablissement === currentUser.etablissement
+          );
+        }
+        return [];
+      };
+
+      const interventionsList = getAccessibleInterventions().sort((a, b) =>
+        new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time)
       );
 
-      // --- Admin Panel ---
+      if (isLoading) {
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-6xl mb-4">🎵</div>
+              <p className="text-gray-600">Chargement...</p>
+            </div>
+          </div>
+        );
+      }
+
+      if (!currentUser) {
+        if (showAdminLogin) {
+          return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+                <div className="text-center mb-8">
+                  <span className="text-6xl">🔐</span>
+                  <h1 className="text-3xl font-bold text-purple-900 mt-4 mb-2">Administration</h1>
+                  <p className="text-gray-600">Accès réservé</p>
+                </div>
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email administrateur</label>
+                    <input
+                      type="text"
+                      value={loginData.email}
+                      onChange={(e) => setLoginData({...loginData, email: e.target.value})}
+                      className="w-full px-4 py-3 border rounded-lg"
+                      placeholder="admin"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+                    <input
+                      type="password"
+                      value={loginData.password}
+                      onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                      onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                      className="w-full px-4 py-3 border rounded-lg"
+                      placeholder="Mot de passe"
+                    />
+                  </div>
+                  {loginError && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                      {loginError}
+                    </div>
+                  )}
+                  <button
+                    onClick={handleLogin}
+                    className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700"
+                  >
+                    Se connecter
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowAdminLogin(false);
+                      setLoginData({ email: '', password: '' });
+                      setLoginError('');
+                    }}
+                    className="w-full text-gray-600 hover:text-gray-800 text-sm"
+                  >
+                    ← Retour
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        if (showSignup) {
+          return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+                <div className="text-center mb-8">
+                  <span className="text-6xl">🎵</span>
+                  <h1 className="text-3xl font-bold text-purple-900 mt-4 mb-2">Haltes Musicales</h1>
+                  <p className="text-gray-600">Créer votre compte</p>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Nom complet *</label>
+                    <input
+                      type="text"
+                      value={signupData.name}
+                      onChange={(e) => setSignupData({...signupData, name: e.target.value})}
+                      className="w-full px-4 py-3 border rounded-lg"
+                      placeholder="Dr. Marie Dupont"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                    <input
+                      type="email"
+                      value={signupData.email}
+                      onChange={(e) => setSignupData({...signupData, email: e.target.value})}
+                      className="w-full px-4 py-3 border rounded-lg"
+                      placeholder="email@exemple.fr"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe * (min. 8 car.)</label>
+                    <input
+                      type="password"
+                      value={signupData.password}
+                      onChange={(e) => setSignupData({...signupData, password: e.target.value})}
+                      className="w-full px-4 py-3 border rounded-lg"
+                      placeholder="********"
+                      minLength="8"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Type *</label>
+                    <select
+                      value={signupData.type}
+                      onChange={(e) => setSignupData({...signupData, type: e.target.value})}
+                      className="w-full px-4 py-3 border rounded-lg"
+                    >
+                      <option value="professionnel">Psychologue</option>
+                      <option value="invite">Établissement</option>
+                    </select>
+                  </div>
+                  {signupData.type === 'invite' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Établissement</label>
+                      <input
+                        type="text"
+                        value={signupData.etablissement}
+                        onChange={(e) => setSignupData({...signupData, etablissement: e.target.value})}
+                        className="w-full px-4 py-3 border rounded-lg"
+                        placeholder="EHPAD Les Jardins"
+                      />
+                    </div>
+                  )}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <label className="flex items-start gap-3 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={signupData.rgpdConsent}
+                        onChange={(e) => setSignupData({...signupData, rgpdConsent: e.target.checked})}
+                        className="mt-1"
+                      />
+                      <span>
+                        J'accepte la{' '}
+                        <button
+                          onClick={() => alert("Politique de confidentialité : vos données sont stockées localement et ne sont pas partagées.")}
+                          className="text-purple-600 underline"
+                          type="button"
+                        >
+                          politique de confidentialité
+                        </button>
+                        {' '}*
+                      </span>
+                    </label>
+                  </div>
+                  <button
+                    onClick={handleSignup}
+                    className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700"
+                  >
+                    Créer mon compte
+                  </button>
+                  <button
+                    onClick={() => setShowSignup(false)}
+                    className="w-full text-purple-600 hover:text-purple-700 text-sm font-medium"
+                  >
+                    J'ai déjà un compte
+                  </button>
+                  <button
+                    onClick={() => setShowAdminLogin(true)}
+                    className="w-full text-gray-400 hover:text-gray-600 text-xs pt-4 border-t"
+                  >
+                    Accès admin
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+              <div className="text-center mb-8">
+                <span className="text-6xl">🎵</span>
+                <h1 className="text-3xl font-bold text-purple-900 mt-4 mb-2">Haltes Musicales</h1>
+                <p className="text-gray-600">Connexion</p>
+              </div>
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <input
+                    type="email"
+                    value={loginData.email}
+                    onChange={(e) => setLoginData({...loginData, email: e.target.value})}
+                    className="w-full px-4 py-3 border rounded-lg"
+                    placeholder="email@exemple.fr"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+                  <input
+                    type="password"
+                    value={loginData.password}
+                    onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                    onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                    className="w-full px-4 py-3 border rounded-lg"
+                    placeholder="********"
+                  />
+                </div>
+                {loginError && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                    {loginError}
+                  </div>
+                )}
+                <button
+                  onClick={handleLogin}
+                  className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700"
+                >
+                  Se connecter
+                </button>
+                <button
+                  onClick={() => {
+                    setShowSignup(true);
+                    setLoginData({ email: '', password: '' });
+                    setLoginError('');
+                  }}
+                  className="w-full text-purple-600 hover:text-purple-700 text-sm font-medium"
+                >
+                  Créer un compte
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
       if (currentUser.type === 'admin' && showAdminPanel) {
         return (
           <div className="min-h-screen bg-gray-50">
@@ -240,7 +597,10 @@
                   </div>
                 </div>
                 <button
-                  onClick={() => { setCurrentUser(null); setShowAdminPanel(false); }}
+                  onClick={() => {
+                    setCurrentUser(null);
+                    setShowAdminPanel(false);
+                  }}
                   className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
                 >
                   <Icons.LogOut />
@@ -251,31 +611,310 @@
             <div className="max-w-7xl mx-auto px-4 py-6">
               <div className="bg-white rounded-xl shadow p-6 mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Ajouter un utilisateur</h2>
-                {/* Formulaire d'ajout d'utilisateur */}
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  <input
+                    type="text"
+                    placeholder="Nom"
+                    value={newUser.name}
+                    onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+                    className="px-4 py-2 border rounded-lg"
+                  />
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={newUser.email}
+                    onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                    className="px-4 py-2 border rounded-lg"
+                  />
+                  <input
+                    type="password"
+                    placeholder="Mot de passe"
+                    value={newUser.password}
+                    onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                    className="px-4 py-2 border rounded-lg"
+                  />
+                  <select
+                    value={newUser.type}
+                    onChange={(e) => setNewUser({...newUser, type: e.target.value})}
+                    className="px-4 py-2 border rounded-lg"
+                  >
+                    <option value="professionnel">Psychologue</option>
+                    <option value="invite">Établissement</option>
+                  </select>
+                  <button
+                    onClick={handleAddUser}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2"
+                  >
+                    <Icons.Plus />
+                    Ajouter
+                  </button>
+                </div>
               </div>
               <div className="grid md:grid-cols-2 gap-6">
-                {/* Liste des psychologues et établissements */}
+                <div className="bg-white rounded-xl shadow p-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">Psychologues ({users.professionnels.length})</h3>
+                  <div className="space-y-3">
+                    {users.professionnels.map(user => (
+                      <div key={user.id} className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                        <div>
+                          <p className="font-medium text-gray-900">{user.name}</p>
+                          <p className="text-sm text-gray-600">{user.email}</p>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteUser(user.id, 'professionnel')}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Icons.Trash />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-white rounded-xl shadow p-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">Établissements ({users.invites.length})</h3>
+                  <div className="space-y-3">
+                    {users.invites.map(user => (
+                      <div key={user.id} className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                        <div>
+                          <p className="font-medium text-gray-900">{user.name}</p>
+                          <p className="text-sm text-gray-600">{user.email}</p>
+                          {user.etablissement && <p className="text-xs text-gray-500">{user.etablissement}</p>}
+                        </div>
+                        <button
+                          onClick={() => handleDeleteUser(user.id, 'invite')}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Icons.Trash />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         );
       }
 
-      // --- Interface principale ---
+      // --- INTERFACE PRINCIPALE ---
       return (
         <div className="min-h-screen bg-gray-50">
           {notification && (
-            <div className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg ${notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+            <div className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
               {notification.type === 'success' && <span>✓</span>}
               <span>{notification.msg}</span>
             </div>
           )}
+
           <header className="bg-white shadow-sm border-b sticky top-0 z-40">
-            {/* Header */}
+            <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+              <button
+                onClick={() => setExpandedIntervention(null)}
+                className="flex items-center gap-4 hover:opacity-80"
+              >
+                <span className="text-4xl">🎵</span>
+                <div>
+                  <h1 className="text-2xl font-bold text-purple-900">Haltes Musicales</h1>
+                  <p className="text-sm text-gray-600 flex items-center gap-2">
+                    {currentUser.type === 'professionnel' ? <Icons.Users /> : <Icons.Lock />}
+                    {currentUser.name}
+                  </p>
+                </div>
+              </button>
+              <button
+                onClick={() => {
+                  setCurrentUser(null);
+                  setInterventions({});
+                  setExpandedIntervention(null);
+                }}
+                className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+              >
+                <Icons.LogOut />
+                <span className="hidden sm:inline">Déconnexion</span>
+              </button>
+            </div>
           </header>
+
           <div className="max-w-7xl mx-auto px-4 py-6">
-            {/* Liste des interventions ou détails */}
+            {!expandedIntervention ? (
+              <>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900">Mes Interventions ({interventionsList.length})</h2>
+                  {currentUser.type === 'professionnel' && (
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleExportCSV}
+                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                      >
+                        <Icons.FileDown /> Exporter CSV
+                      </button>
+                      <button
+                        onClick={() => setShowAddModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                      >
+                        <Icons.Plus /> Nouvelle intervention
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid gap-4">
+                  {interventionsList.length === 0 ? (
+                    <div className="bg-white rounded-xl p-12 text-center shadow">
+                      <Icons.Calendar size={64} />
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2 mt-4">Aucune intervention</h3>
+                      <p className="text-gray-500 mb-6">Commencez par ajouter une intervention</p>
+                      {currentUser.type === 'professionnel' && (
+                        <button
+                          onClick={() => setShowAddModal(true)}
+                          className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                        >
+                          <Icons.Plus />
+                          Créer une intervention
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    interventionsList.map(intervention => (
+                      <div key={intervention.id} className="bg-white rounded-xl shadow hover:shadow-lg transition p-6">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">{intervention.lieu}</h3>
+                            <p className="text-gray-600 text-sm mt-1">
+                              {new Date(intervention.date).toLocaleDateString('fr-FR')} à {intervention.time}
+                            </p>
+                            <p className="text-gray-500 text-sm mt-2">
+                              {intervention.beneficiaires?.length || 0} bénéficiaire(s)
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => setExpandedIntervention(intervention.id)}
+                            className="text-purple-600 hover:text-purple-700 font-medium"
+                          >
+                            Voir détails →
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            ) : (
+              <div>
+                <button
+                  onClick={() => setExpandedIntervention(null)}
+                  className="mb-4 text-purple-600 hover:text-purple-700 font-medium"
+                >
+                  ← Retour aux interventions
+                </button>
+                <div className="bg-white rounded-xl shadow p-6 mb-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">
+                        {interventions[expandedIntervention]?.lieu}
+                      </h2>
+                      <p className="text-gray-600 mt-1">
+                        {interventions[expandedIntervention]?.date &&
+                          new Date(interventions[expandedIntervention].date).toLocaleDateString('fr-FR', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })
+                        } à {interventions[expandedIntervention]?.time}
+                      </p>
+                    </div>
+                    {currentUser.type === 'professionnel' && (
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => exportToPDF(interventions[expandedIntervention])}
+                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
+                        >
+                          <Icons.FileDown /> Exporter PDF
+                        </button>
+                        <button
+                          onClick={() => handleAddBeneficiaire(expandedIntervention)}
+                          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2"
+                        >
+                          <Icons.Plus />
+                          Ajouter bénéficiaire
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {(!interventions[expandedIntervention]?.beneficiaires ||
+                  interventions[expandedIntervention]?.beneficiaires.length === 0) ? (
+                  <div className="bg-white rounded-xl p-12 text-center shadow">
+                    <p className="text-gray-400">Aucun bénéficiaire ajouté</p>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-xl p-6 shadow">
+                    <h3 className="text-lg font-bold mb-4">Bénéficiaires</h3>
+                    <div className="space-y-4">
+                      {interventions[expandedIntervention].beneficiaires.map(benef => (
+                        <div key={benef.id} className="p-4 border rounded-lg">
+                          <p className="font-medium">{benef.beneficiaire.nom} {benef.beneficiaire.prenom}</p>
+                          <p className="text-sm text-gray-600">Pathologies: {benef.pathologies}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
+
+          {showAddModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-bold text-gray-900">Nouvelle intervention</h3>
+                  <button
+                    onClick={() => setShowAddModal(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <span className="text-2xl">×</span>
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <input
+                    type="date"
+                    value={newIntervention.date}
+                    onChange={(e) => setNewIntervention({...newIntervention, date: e.target.value})}
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                  <input
+                    type="time"
+                    value={newIntervention.time}
+                    onChange={(e) => setNewIntervention({...newIntervention, time: e.target.value})}
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                  <input
+                    type="text"
+                    value={newIntervention.lieu}
+                    placeholder="Lieu"
+                    onChange={(e) => setNewIntervention({...newIntervention, lieu: e.target.value})}
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowAddModal(false)}
+                      className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      onClick={handleAddIntervention}
+                      className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                    >
+                      Ajouter
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
