@@ -4,130 +4,250 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Haltes Musicales</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); min-height: 100vh; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .header { background: white; border-bottom: 1px solid #e5e7eb; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { font-size: 24px; color: #7c3aed; }
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; }
+    .btn-primary { background: #7c3aed; color: white; }
+    .btn-primary:hover { background: #6d28d9; }
+    .btn-secondary { background: #e5e7eb; color: #374151; }
+    .btn-secondary:hover { background: #d1d5db; }
+    .input { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; margin-bottom: 12px; }
+    .input:focus { outline: none; border-color: #7c3aed; }
+    .login-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .login-card { background: white; border-radius: 16px; padding: 40px; max-width: 400px; width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    .emoji { font-size: 64px; text-align: center; margin-bottom: 20px; }
+    .title { text-align: center; font-size: 28px; font-weight: 700; color: #7c3aed; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #6b7280; margin-bottom: 24px; }
+    .notification { position: fixed; top: 20px; right: 20px; padding: 16px 24px; border-radius: 8px; color: white; z-index: 1000; animation: slideIn 0.3s; }
+    .notification.success { background: #10b981; }
+    .notification.error { background: #ef4444; }
+    @keyframes slideIn { from { transform: translateX(400px); } to { transform: translateX(0); } }
+    .hidden { display: none; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .intervention-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s; }
+    .intervention-card:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.15); transform: translateY(-2px); }
+    label { display: block; margin-bottom: 4px; font-size: 14px; font-weight: 600; color: #374151; }
+    select { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; margin-bottom: 12px; background: white; }
+    .checkbox-label { display: flex; align-items: start; gap: 8px; margin-bottom: 16px; }
+    .error-msg { background: #fee2e2; border: 1px solid #fecaca; color: #991b1b; padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; }
+    .link-btn { background: none; border: none; color: #7c3aed; cursor: pointer; text-decoration: underline; padding: 8px 0; font-size: 14px; }
+  </style>
 </head>
 <body>
   <div id="app"></div>
 
   <script>
-    // Configuration
     const ADMIN_CODE = 'ADMIN2024';
-    
-    // State global
     let state = {
       currentUser: null,
       users: { professionnels: [], invites: [] },
       interventions: {},
-      showSignup: true,
-      showAdminLogin: false,
-      showAdminPanel: false,
-      showAddModal: false,
-      showRgpdModal: false,
-      expandedIntervention: null,
-      isLoading: true,
-      notification: null,
+      view: 'signup',
       loginData: { email: '', password: '' },
-      loginError: '',
       signupData: { name: '', email: '', password: '', type: 'professionnel', etablissement: '', rgpdConsent: false },
+      loginError: '',
       newIntervention: { date: '', time: '', lieu: '' },
-      newUser: { name: '', email: '', password: '', type: 'professionnel' }
+      expandedIntervention: null
     };
 
-    // Icônes SVG
-    const icons = {
-      calendar: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
-      logout: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
-      plus: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
-      lock: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
-      users: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-      trash: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`
-    };
-
-    // Utilitaires
-    function showNotif(msg, type = 'success') {
-      state.notification = { msg, type };
-      render();
-      setTimeout(() => {
-        state.notification = null;
-        render();
-      }, 3000);
-    }
-
-    function loadData() {
-      state.isLoading = true;
+    function init() {
       try {
         const usersData = localStorage.getItem('haltes_users');
-        if (usersData) {
-          state.users = JSON.parse(usersData);
-        }
-      } catch (e) {
-        console.log('Première utilisation', e);
-      }
-      state.isLoading = false;
+        if (usersData) state.users = JSON.parse(usersData);
+      } catch (e) {}
       render();
     }
 
-    function loadUserInterventions() {
-      if (!state.currentUser || state.currentUser.type === 'admin') return;
-      try {
-        const data = localStorage.getItem(`interventions_${state.currentUser.id}`);
-        if (data) {
-          state.interventions = JSON.parse(data);
+    function showNotif(msg, type = 'success') {
+      const notif = document.createElement('div');
+      notif.className = `notification ${type}`;
+      notif.textContent = msg;
+      document.body.appendChild(notif);
+      setTimeout(() => notif.remove(), 3000);
+    }
+
+    function render() {
+      const app = document.getElementById('app');
+      
+      if (!state.currentUser) {
+        if (state.view === 'signup') {
+          app.innerHTML = `
+            <div class="login-container">
+              <div class="login-card">
+                <div class="emoji">🎵</div>
+                <h1 class="title">Haltes Musicales</h1>
+                <p class="subtitle">Créer votre compte</p>
+                <label>Nom complet *</label>
+                <input type="text" id="name" class="input" placeholder="Dr. Marie Dupont" value="${state.signupData.name}">
+                <label>Email *</label>
+                <input type="email" id="email" class="input" placeholder="email@exemple.fr" value="${state.signupData.email}">
+                <label>Mot de passe * (min. 8 caractères)</label>
+                <input type="password" id="password" class="input" placeholder="********" value="${state.signupData.password}">
+                <label>Type *</label>
+                <select id="type" class="input">
+                  <option value="professionnel">Psychologue Haltes Musicales</option>
+                  <option value="invite">Établissement (invité)</option>
+                </select>
+                <div id="etablissement-field" class="${state.signupData.type === 'invite' ? '' : 'hidden'}">
+                  <label>Nom établissement</label>
+                  <input type="text" id="etablissement" class="input" placeholder="EHPAD Les Jardins" value="${state.signupData.etablissement}">
+                </div>
+                <div class="checkbox-label">
+                  <input type="checkbox" id="rgpd" ${state.signupData.rgpdConsent ? 'checked' : ''}>
+                  <label style="font-weight: normal;">J'accepte la politique de confidentialité (RGPD) *</label>
+                </div>
+                ${state.loginError ? `<div class="error-msg">${state.loginError}</div>` : ''}
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 12px;" onclick="handleSignup()">Créer mon compte</button>
+                <button class="link-btn" style="width: 100%;" onclick="switchView('login')">J'ai déjà un compte</button>
+                <hr style="margin: 16px 0; border: none; border-top: 1px solid #e5e7eb;">
+                <button class="link-btn" style="width: 100%; color: #9ca3af;" onclick="switchView('admin')">Accès administrateur</button>
+              </div>
+            </div>
+          `;
+          document.getElementById('type').addEventListener('change', (e) => {
+            state.signupData.type = e.target.value;
+            render();
+          });
+        } else if (state.view === 'login') {
+          app.innerHTML = `
+            <div class="login-container">
+              <div class="login-card">
+                <div class="emoji">🎵</div>
+                <h1 class="title">Haltes Musicales</h1>
+                <p class="subtitle">Connexion</p>
+                <label>Email</label>
+                <input type="email" id="email" class="input" placeholder="email@exemple.fr" value="${state.loginData.email}">
+                <label>Mot de passe</label>
+                <input type="password" id="password" class="input" placeholder="********" value="${state.loginData.password}">
+                ${state.loginError ? `<div class="error-msg">${state.loginError}</div>` : ''}
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 12px;" onclick="handleLogin()">Se connecter</button>
+                <button class="link-btn" style="width: 100%;" onclick="switchView('signup')">Créer un compte</button>
+              </div>
+            </div>
+          `;
+        } else if (state.view === 'admin') {
+          app.innerHTML = `
+            <div class="login-container">
+              <div class="login-card">
+                <div class="emoji">🔐</div>
+                <h1 class="title">Administration</h1>
+                <p class="subtitle">Accès réservé</p>
+                <label>Email administrateur</label>
+                <input type="text" id="email" class="input" placeholder="admin" value="${state.loginData.email}">
+                <label>Mot de passe</label>
+                <input type="password" id="password" class="input" placeholder="Mot de passe" value="${state.loginData.password}">
+                ${state.loginError ? `<div class="error-msg">${state.loginError}</div>` : ''}
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 12px;" onclick="handleLogin()">Se connecter</button>
+                <button class="link-btn" style="width: 100%;" onclick="switchView('signup')">← Retour</button>
+              </div>
+            </div>
+          `;
+        }
+      } else if (state.currentUser.type === 'admin') {
+        app.innerHTML = `
+          <div class="header">
+            <div>
+              <h1>🎵 Administration - Haltes Musicales</h1>
+              <p style="color: #6b7280; font-size: 14px;">Gestion des utilisateurs</p>
+            </div>
+            <button class="btn btn-secondary" onclick="logout()">Déconnexion</button>
+          </div>
+          <div class="container">
+            <div class="card">
+              <h2 style="margin-bottom: 20px;">Utilisateurs</h2>
+              <div class="grid">
+                <div>
+                  <h3 style="margin-bottom: 12px; color: #7c3aed;">Psychologues (${state.users.professionnels.length})</h3>
+                  ${state.users.professionnels.map(u => `<div style="padding: 12px; background: #f3f4f6; border-radius: 8px; margin-bottom: 8px;"><strong>${u.name}</strong><br><small>${u.email}</small></div>`).join('') || '<p style="color: #9ca3af;">Aucun psychologue</p>'}
+                </div>
+                <div>
+                  <h3 style="margin-bottom: 12px; color: #7c3aed;">Établissements (${state.users.invites.length})</h3>
+                  ${state.users.invites.map(u => `<div style="padding: 12px; background: #f3f4f6; border-radius: 8px; margin-bottom: 8px;"><strong>${u.name}</strong><br><small>${u.email}</small>${u.etablissement ? `<br><small>${u.etablissement}</small>` : ''}</div>`).join('') || '<p style="color: #9ca3af;">Aucun établissement</p>'}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        const interventionsList = Object.values(state.interventions).filter(i => i.createdBy === state.currentUser.id).sort((a,b) => new Date(b.date) - new Date(a.date));
+        
+        if (state.expandedIntervention) {
+          const intervention = state.interventions[state.expandedIntervention];
+          app.innerHTML = `
+            <div class="header">
+              <div>
+                <h1>🎵 ${intervention.lieu}</h1>
+                <p style="color: #6b7280; font-size: 14px;">${new Date(intervention.date).toLocaleDateString('fr-FR')} à ${intervention.time}</p>
+              </div>
+              <button class="btn btn-secondary" onclick="backToList()">← Retour</button>
+            </div>
+            <div class="container">
+              <div class="card">
+                <h3>Bénéficiaires: ${intervention.beneficiaires?.length || 0}</h3>
+                <p style="color: #6b7280; margin-top: 8px;">Détails complets en développement</p>
+                ${state.currentUser.type === 'professionnel' ? `<button class="btn btn-primary" style="margin-top: 16px;" onclick="addBeneficiaire('${intervention.id}')">+ Ajouter bénéficiaire</button>` : ''}
+              </div>
+            </div>
+          `;
         } else {
-          state.interventions = {};
+          app.innerHTML = `
+            <div class="header">
+              <div>
+                <h1>🎵 Haltes Musicales</h1>
+                <p style="color: #6b7280; font-size: 14px;">${state.currentUser.name}</p>
+              </div>
+              <button class="btn btn-secondary" onclick="logout()">Déconnexion</button>
+            </div>
+            <div class="container">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Mes Interventions (${interventionsList.length})</h2>
+                ${state.currentUser.type === 'professionnel' ? `<button class="btn btn-primary" onclick="showAddModal()">+ Nouvelle intervention</button>` : ''}
+              </div>
+              ${interventionsList.length === 0 ? `
+                <div class="card" style="text-align: center; padding: 60px 20px;">
+                  <div style="font-size: 48px; margin-bottom: 16px;">📅</div>
+                  <h3>Aucune intervention</h3>
+                  <p style="color: #6b7280; margin: 12px 0;">Commencez par ajouter une intervention</p>
+                  ${state.currentUser.type === 'professionnel' ? `<button class="btn btn-primary" onclick="showAddModal()">+ Créer une intervention</button>` : ''}
+                </div>
+              ` : `
+                <div class="grid">
+                  ${interventionsList.map(i => `
+                    <div class="intervention-card" onclick="viewIntervention('${i.id}')">
+                      <h3 style="margin-bottom: 8px;">${i.lieu}</h3>
+                      <p style="color: #6b7280; font-size: 14px;">${new Date(i.date).toLocaleDateString('fr-FR')} à ${i.time}</p>
+                      <p style="color: #9ca3af; font-size: 14px; margin-top: 8px;">${i.beneficiaires?.length || 0} bénéficiaire(s)</p>
+                    </div>
+                  `).join('')}
+                </div>
+              `}
+            </div>
+          `;
         }
-      } catch (e) {
-        console.log('Erreur chargement interventions', e);
-        state.interventions = {};
       }
+    }
+
+    function switchView(view) {
+      state.view = view;
+      state.loginError = '';
+      state.loginData = { email: '', password: '' };
       render();
-    }
-
-    function saveInterventions(data) {
-      if (!state.currentUser || state.currentUser.type === 'admin') return;
-      try {
-        localStorage.setItem(`interventions_${state.currentUser.id}`, JSON.stringify(data));
-      } catch (e) { 
-        console.error('Erreur sauvegarde', e);
-        showNotif('Erreur sauvegarde', 'error');
-      }
-    }
-
-    function saveUsers(userData) {
-      try {
-        localStorage.setItem('haltes_users', JSON.stringify(userData));
-        state.users = userData;
-      } catch (e) {
-        console.error('Erreur sauvegarde users', e);
-        showNotif('Erreur sauvegarde', 'error');
-      }
-    }
-
-    // Handlers
-    function handleLogin() {
-      if (state.loginData.email.trim() === 'admin' && state.loginData.password.trim() === ADMIN_CODE) {
-        state.currentUser = { type: 'admin', name: 'Administrateur', id: 'admin' };
-        showNotif('Bienvenue Administrateur !');
-        state.showAdminPanel = true;
-        state.showAdminLogin = false;
-        render();
-        return;
-      }
-      const allUsers = [...state.users.professionnels, ...state.users.invites];
-      const user = allUsers.find(u => u.email === state.loginData.email.trim() && u.password === state.loginData.password.trim());
-      if (user) { 
-        state.currentUser = user; 
-        showNotif(`Bienvenue ${user.name} !`); 
-        state.showSignup = false;
-        loadUserInterventions();
-      } else { 
-        state.loginError = 'Email ou mot de passe incorrect';
-        render();
-      }
     }
 
     function handleSignup() {
-      if (!state.signupData.name || !state.signupData.password || !state.signupData.email) {
+      state.signupData.name = document.getElementById('name').value;
+      state.signupData.email = document.getElementById('email').value;
+      state.signupData.password = document.getElementById('password').value;
+      state.signupData.type = document.getElementById('type').value;
+      state.signupData.etablissement = document.getElementById('etablissement')?.value || '';
+      state.signupData.rgpdConsent = document.getElementById('rgpd').checked;
+
+      if (!state.signupData.name || !state.signupData.email || !state.signupData.password) {
         showNotif('Remplissez tous les champs obligatoires', 'error');
         return;
       }
@@ -139,391 +259,149 @@
         showNotif('Vous devez accepter la politique de confidentialité', 'error');
         return;
       }
+
       const allUsers = [...state.users.professionnels, ...state.users.invites];
       if (allUsers.find(u => u.email === state.signupData.email)) {
         showNotif('Cet email existe déjà', 'error');
         return;
       }
-      const userData = { ...state.users };
+
       const id = Date.now().toString();
-      const userToAdd = { 
-        name: state.signupData.name, 
-        email: state.signupData.email,
-        password: state.signupData.password, 
-        type: state.signupData.type, 
-        id,
-        etablissement: state.signupData.etablissement || '',
-        createdAt: new Date().toISOString(),
-        rgpdConsent: true
-      };
+      const user = { ...state.signupData, id, createdAt: new Date().toISOString() };
+      
       if (state.signupData.type === 'professionnel') {
-        userData.professionnels.push(userToAdd);
+        state.users.professionnels.push(user);
       } else {
-        userData.invites.push(userToAdd);
+        state.users.invites.push(user);
       }
-      saveUsers(userData);
-      state.currentUser = userToAdd;
+      
+      localStorage.setItem('haltes_users', JSON.stringify(state.users));
+      state.currentUser = user;
+      
+      try {
+        const data = localStorage.getItem(`interventions_${user.id}`);
+        state.interventions = data ? JSON.parse(data) : {};
+      } catch (e) {
+        state.interventions = {};
+      }
+      
       showNotif('Compte créé avec succès !');
-      state.showSignup = false;
-      loadUserInterventions();
+      render();
     }
 
-    function handleAddUser() {
-      if (!state.newUser.name || !state.newUser.password || !state.newUser.email) {
-        showNotif('Remplissez tous les champs', 'error');
+    function handleLogin() {
+      state.loginData.email = document.getElementById('email').value;
+      state.loginData.password = document.getElementById('password').value;
+
+      if (state.loginData.email === 'admin' && state.loginData.password === ADMIN_CODE) {
+        state.currentUser = { type: 'admin', name: 'Administrateur', id: 'admin' };
+        showNotif('Bienvenue Administrateur !');
+        render();
         return;
       }
+
       const allUsers = [...state.users.professionnels, ...state.users.invites];
-      if (allUsers.find(u => u.email === state.newUser.email)) {
-        showNotif('Cet email existe déjà', 'error');
-        return;
-      }
-      const userData = { ...state.users };
-      const id = Date.now().toString();
-      const userToAdd = { 
-        ...state.newUser, 
-        id,
-        createdAt: new Date().toISOString(),
-        rgpdConsent: true
-      };
-      if (state.newUser.type === 'professionnel') {
-        userData.professionnels.push(userToAdd);
+      const user = allUsers.find(u => u.email === state.loginData.email && u.password === state.loginData.password);
+      
+      if (user) {
+        state.currentUser = user;
+        try {
+          const data = localStorage.getItem(`interventions_${user.id}`);
+          state.interventions = data ? JSON.parse(data) : {};
+        } catch (e) {
+          state.interventions = {};
+        }
+        showNotif(`Bienvenue ${user.name} !`);
+        render();
       } else {
-        userData.invites.push(userToAdd);
+        state.loginError = 'Email ou mot de passe incorrect';
+        render();
       }
-      saveUsers(userData);
-      state.newUser = { name: '', email: '', password: '', type: 'professionnel' };
-      showNotif('Utilisateur ajouté !');
+    }
+
+    function logout() {
+      state.currentUser = null;
+      state.interventions = {};
+      state.view = 'signup';
+      state.expandedIntervention = null;
       render();
     }
 
-    function handleDeleteUser(userId, type) {
-      const userData = { ...state.users };
-      if (type === 'professionnel') {
-        userData.professionnels = userData.professionnels.filter(u => u.id !== userId);
-      } else {
-        userData.invites = userData.invites.filter(u => u.id !== userId);
-      }
-      saveUsers(userData);
-      showNotif('Utilisateur supprimé');
-      render();
+    function showAddModal() {
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;';
+      modal.innerHTML = `
+        <div class="card" style="max-width: 400px; width: 90%;">
+          <h2 style="margin-bottom: 20px;">Nouvelle intervention</h2>
+          <label>Date</label>
+          <input type="date" id="modal-date" class="input">
+          <label>Heure</label>
+          <input type="time" id="modal-time" class="input">
+          <label>Lieu</label>
+          <input type="text" id="modal-lieu" class="input" placeholder="Lieu de l'intervention">
+          <div style="display: flex; gap: 12px;">
+            <button class="btn btn-secondary" style="flex: 1;" onclick="this.closest('div').parentElement.parentElement.remove()">Annuler</button>
+            <button class="btn btn-primary" style="flex: 1;" onclick="saveIntervention(this)">Ajouter</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
     }
 
-    function handleAddIntervention() {
-      if (!state.newIntervention.date || !state.newIntervention.time || !state.newIntervention.lieu) {
+    function saveIntervention(btn) {
+      const date = document.getElementById('modal-date').value;
+      const time = document.getElementById('modal-time').value;
+      const lieu = document.getElementById('modal-lieu').value;
+
+      if (!date || !time || !lieu) {
         showNotif('Remplissez tous les champs', 'error');
         return;
       }
+
       const id = Date.now().toString();
-      const updated = { 
-        ...state.interventions, 
-        [id]: { 
-          ...state.newIntervention, 
-          id, 
-          beneficiaires: [],
-          createdBy: state.currentUser.id,
-          createdByName: state.currentUser.name,
-          createdByType: state.currentUser.type,
-          etablissement: state.currentUser.etablissement || ''
-        }
+      state.interventions[id] = {
+        id, date, time, lieu,
+        beneficiaires: [],
+        createdBy: state.currentUser.id,
+        createdByName: state.currentUser.name
       };
-      state.interventions = updated;
-      saveInterventions(updated);
-      state.showAddModal = false;
-      state.newIntervention = { date: '', time: '', lieu: '' };
+
+      localStorage.setItem(`interventions_${state.currentUser.id}`, JSON.stringify(state.interventions));
+      btn.closest('div').parentElement.parentElement.remove();
       showNotif('Intervention créée !');
       render();
     }
 
-    function createEmptyEvaluation() {
-      return {
-        id: Date.now().toString() + Math.random(),
-        beneficiaire: { nom: '', prenom: '', dateNaissance: '', sexe: 'Féminin' },
-        pathologies: '', 
-        souhaitsMusicaux: '',
-        objectifs: '',
-        compteRenduMut: '',
-        compteRenduEtablissement: '',
-        dates: [
-          { date: '', evaluations: {}, commentaires: {}, label: 'Intervention 1' },
-          { date: '', evaluations: {}, commentaires: {}, label: 'Intervention 2' },
-          { date: '', evaluations: {}, commentaires: {}, label: 'Intervention 3' },
-          { date: '', evaluations: {}, commentaires: {}, label: 'Intervention 4' }
-        ]
-      };
+    function viewIntervention(id) {
+      state.expandedIntervention = id;
+      render();
     }
 
-    function handleAddBeneficiaire(interventionId) {
-      const newBenef = createEmptyEvaluation();
-      const updated = { ...state.interventions };
-      if (!updated[interventionId].beneficiaires) updated[interventionId].beneficiaires = [];
-      updated[interventionId].beneficiaires.push(newBenef);
-      state.interventions = updated;
-      saveInterventions(updated);
+    function backToList() {
+      state.expandedIntervention = null;
+      render();
+    }
+
+    function addBeneficiaire(interventionId) {
+      const benef = {
+        id: Date.now().toString(),
+        beneficiaire: { nom: '', prenom: '', dateNaissance: '', sexe: 'Féminin' },
+        pathologies: '',
+        souhaitsMusicaux: '',
+        objectifs: ''
+      };
+      
+      if (!state.interventions[interventionId].beneficiaires) {
+        state.interventions[interventionId].beneficiaires = [];
+      }
+      state.interventions[interventionId].beneficiaires.push(benef);
+      
+      localStorage.setItem(`interventions_${state.currentUser.id}`, JSON.stringify(state.interventions));
       showNotif('Bénéficiaire ajouté !');
       render();
     }
 
-    function getAccessibleInterventions() {
-      const allInterventions = Object.values(state.interventions);
-      if (state.currentUser.type === 'professionnel') {
-        return allInterventions.filter(intervention => intervention.createdBy === state.currentUser.id);
-      } else if (state.currentUser.type === 'invite') {
-        return allInterventions.filter(intervention => 
-          intervention.createdBy === state.currentUser.id || 
-          intervention.etablissement === state.currentUser.etablissement
-        );
-      }
-      return [];
-    }
-
-    // Templates
-    function renderLoading() {
-      return `
-        <div class="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center">
-          <div class="text-center">
-            <div class="text-6xl mb-4">🎵</div>
-            <p class="text-gray-600">Chargement...</p>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderAdminLogin() {
-      return `
-        <div class="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
-          <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-            <div class="text-center mb-8">
-              <span class="text-6xl">🔐</span>
-              <h1 class="text-3xl font-bold text-purple-900 mt-4 mb-2">Administration</h1>
-              <p class="text-gray-600">Accès réservé</p>
-            </div>
-            <div class="space-y-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Email administrateur</label>
-                <input type="text" id="admin-email" value="${state.loginData.email}" class="w-full px-4 py-3 border rounded-lg" placeholder="admin">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
-                <input type="password" id="admin-password" value="${state.loginData.password}" class="w-full px-4 py-3 border rounded-lg" placeholder="Mot de passe">
-              </div>
-              ${state.loginError ? `<div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">${state.loginError}</div>` : ''}
-              <button onclick="handleAdminLoginClick()" class="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700">Se connecter</button>
-              <button onclick="backToSignup()" class="w-full text-gray-600 hover:text-gray-800 text-sm">← Retour</button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderSignup() {
-      return `
-        <div class="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
-          <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-            <div class="text-center mb-8">
-              <span class="text-6xl">🎵</span>
-              <h1 class="text-3xl font-bold text-purple-900 mt-4 mb-2">Haltes Musicales</h1>
-              <p class="text-gray-600">Créer votre compte</p>
-            </div>
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Nom complet *</label>
-                <input type="text" id="signup-name" value="${state.signupData.name}" class="w-full px-4 py-3 border rounded-lg" placeholder="Dr. Marie Dupont">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                <input type="email" id="signup-email" value="${state.signupData.email}" class="w-full px-4 py-3 border rounded-lg" placeholder="email@exemple.fr">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe * (min. 8 car.)</label>
-                <input type="password" id="signup-password" value="${state.signupData.password}" class="w-full px-4 py-3 border rounded-lg" placeholder="********" minlength="8">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Type *</label>
-                <select id="signup-type" class="w-full px-4 py-3 border rounded-lg">
-                  <option value="professionnel" ${state.signupData.type === 'professionnel' ? 'selected' : ''}>Psychologue</option>
-                  <option value="invite" ${state.signupData.type === 'invite' ? 'selected' : ''}>Établissement</option>
-                </select>
-              </div>
-              <div id="etablissement-field" class="${state.signupData.type === 'invite' ? '' : 'hidden'}">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Établissement</label>
-                <input type="text" id="signup-etablissement" value="${state.signupData.etablissement}" class="w-full px-4 py-3 border rounded-lg" placeholder="EHPAD Les Jardins">
-              </div>
-              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <label class="flex items-start gap-3 text-sm">
-                  <input type="checkbox" id="signup-rgpd" ${state.signupData.rgpdConsent ? 'checked' : ''} class="mt-1">
-                  <span>J'accepte la <button onclick="showRgpd()" class="text-purple-600 underline" type="button">politique de confidentialité</button> *</span>
-                </label>
-              </div>
-              <button onclick="handleSignupClick()" class="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700">Créer mon compte</button>
-              <button onclick="switchToLogin()" class="w-full text-purple-600 hover:text-purple-700 text-sm font-medium">J'ai déjà un compte</button>
-              <button onclick="showAdminLoginPage()" class="w-full text-gray-400 hover:text-gray-600 text-xs pt-4 border-t">Accès admin</button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderLogin() {
-      return `
-        <div class="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
-          <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-            <div class="text-center mb-8">
-              <span class="text-6xl">🎵</span>
-              <h1 class="text-3xl font-bold text-purple-900 mt-4 mb-2">Haltes Musicales</h1>
-              <p class="text-gray-600">Connexion</p>
-            </div>
-            <div class="space-y-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                <input type="email" id="login-email" value="${state.loginData.email}" class="w-full px-4 py-3 border rounded-lg" placeholder="email@exemple.fr">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
-                <input type="password" id="login-password" value="${state.loginData.password}" class="w-full px-4 py-3 border rounded-lg" placeholder="********">
-              </div>
-              ${state.loginError ? `<div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">${state.loginError}</div>` : ''}
-              <button onclick="handleLoginClick()" class="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700">Se connecter</button>
-              <button onclick="switchToSignup()" class="w-full text-purple-600 hover:text-purple-700 text-sm font-medium">Créer un compte</button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderAdminPanel() {
-      return `
-        <div class="min-h-screen bg-gray-50">
-          ${state.notification ? `
-            <div class="fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg ${state.notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}">
-              ${state.notification.type === 'success' ? '<span>✓</span>' : ''}
-              <span>${state.notification.msg}</span>
-            </div>
-          ` : ''}
-          <header class="bg-white shadow-sm border-b sticky top-0 z-40">
-            <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-              <div class="flex items-center gap-4">
-                <span class="text-4xl">🎵</span>
-                <div>
-                  <h1 class="text-2xl font-bold text-purple-900">Administration</h1>
-                  <p class="text-sm text-gray-600">Gestion des utilisateurs</p>
-                </div>
-              </div>
-              <button onclick="logout()" class="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                ${icons.logout}
-                Déconnexion
-              </button>
-            </div>
-          </header>
-          <div class="max-w-7xl mx-auto px-4 py-6">
-            <div class="bg-white rounded-xl shadow p-6 mb-6">
-              <h2 class="text-xl font-bold text-gray-900 mb-4">Ajouter un utilisateur</h2>
-              <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <input type="text" id="new-user-name" placeholder="Nom" class="px-4 py-2 border rounded-lg" value="${state.newUser.name}">
-                <input type="email" id="new-user-email" placeholder="Email" class="px-4 py-2 border rounded-lg" value="${state.newUser.email}">
-                <input type="password" id="new-user-password" placeholder="Mot de passe" class="px-4 py-2 border rounded-lg" value="${state.newUser.password}">
-                <select id="new-user-type" class="px-4 py-2 border rounded-lg">
-                  <option value="professionnel">Psychologue</option>
-                  <option value="invite">Établissement</option>
-                </select>
-                <button onclick="handleAddUserClick()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2">
-                  ${icons.plus}
-                  Ajouter
-                </button>
-              </div>
-            </div>
-            <div class="grid md:grid-cols-2 gap-6">
-              <div class="bg-white rounded-xl shadow p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">Psychologues (${state.users.professionnels.length})</h3>
-                <div class="space-y-3">
-                  ${state.users.professionnels.map(user => `
-                    <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-                      <div>
-                        <p class="font-medium text-gray-900">${user.name}</p>
-                        <p class="text-sm text-gray-600">${user.email}</p>
-                      </div>
-                      <button onclick="handleDeleteUser('${user.id}', 'professionnel')" class="text-red-600 hover:text-red-700">
-                        ${icons.trash}
-                      </button>
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-              <div class="bg-white rounded-xl shadow p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">Établissements (${state.users.invites.length})</h3>
-                <div class="space-y-3">
-                  ${state.users.invites.map(user => `
-                    <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                      <div>
-                        <p class="font-medium text-gray-900">${user.name}</p>
-                        <p class="text-sm text-gray-600">${user.email}</p>
-                        ${user.etablissement ? `<p class="text-xs text-gray-500">${user.etablissement}</p>` : ''}
-                      </div>
-                      <button onclick="handleDeleteUser('${user.id}', 'invite')" class="text-red-600 hover:text-red-700">
-                        ${icons.trash}
-                      </button>
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderUserDashboard() {
-      const interventionsList = getAccessibleInterventions().sort((a, b) => 
-        new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time)
-      );
-
-      if (state.expandedIntervention) {
-        const intervention = state.interventions[state.expandedIntervention];
-        return `
-          <div class="min-h-screen bg-gray-50">
-            ${state.notification ? `
-              <div class="fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${state.notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}">
-                ${state.notification.type === 'success' ? '<span>✓</span>' : ''}
-                <span>${state.notification.msg}</span>
-              </div>
-            ` : ''}
-            <header class="bg-white shadow-sm border-b sticky top-0 z-40">
-              <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-                <button onclick="backToInterventions()" class="flex items-center gap-4 hover:opacity-80">
-                  <span class="text-4xl">🎵</span>
-                  <div>
-                    <h1 class="text-2xl font-bold text-purple-900">Haltes Musicales</h1>
-                    <p class="text-sm text-gray-600 flex items-center gap-2">
-                      ${state.currentUser.type === 'professionnel' ? icons.users : icons.lock}
-                      ${state.currentUser.name}
-                    </p>
-                  </div>
-                </button>
-                <button onclick="logout()" class="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                  ${icons.logout}
-                  <span class="hidden sm:inline">Déconnexion</span>
-                </button>
-              </div>
-            </header>
-            <div class="max-w-7xl mx-auto px-4 py-6">
-              <button onclick="backToInterventions()" class="mb-4 text-purple-600 hover:text-purple-700 font-medium">
-                ← Retour aux interventions
-              </button>
-              <div class="bg-white rounded-xl shadow p-6 mb-6">
-                <div class="flex justify-between items-start mb-4">
-                  <div>
-                    <h2 class="text-2xl font-bold text-gray-900">${intervention.lieu}</h2>
-                    <p class="text-gray-600 mt-1">
-                      ${new Date(intervention.date).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} à ${intervention.time}
-                    </p>
-                  </div>
-                  ${state.currentUser.type === 'professionnel' ? `
-                    <button onclick="handleAddBeneficiaire('${intervention.id}')" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2">
-                      ${icons.plus}
-                      Ajouter bénéficiaire
-                    </button>
-                  ` : ''}
-                </div>
-              </div>
-              ${!intervention.beneficiaires || intervention.beneficiaires.length === 0 ? `
-                <div class="bg-white rounded-xl p-12 text-center shadow">
+    window.onload = init;
+  </script>
+</body>
+</html>
