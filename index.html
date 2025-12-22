@@ -350,6 +350,11 @@
         return 'invite_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
       }
 
+      function closeAllModals() {
+        const modals = document.querySelectorAll('.fixed.inset-0');
+        modals.forEach(modal => modal.remove());
+      }
+
       function copyInviteLink(interventionId) {
         const intervention = state.interventions[interventionId];
         const link = window.location.origin + window.location.pathname + '?token=' + intervention.inviteToken;
@@ -363,14 +368,14 @@
             <div class="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-2xl">
               <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold text-gray-900">Lien d'accès pour l'établissement</h3>
-                <button onclick="this.closest('div').parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
                   <span class="text-2xl">×</span>
                 </button>
               </div>
               <div class="bg-gray-50 p-4 rounded-lg mb-4">
                 <input type="text" value="${link}" readonly class="w-full px-3 py-2 border rounded-lg text-sm" id="link-to-copy">
               </div>
-              <button onclick="document.getElementById('link-to-copy').select(); document.execCommand('copy'); showNotif('Lien copié !'); this.closest('div').parentElement.remove();" class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+              <button onclick="document.getElementById('link-to-copy').select(); document.execCommand('copy'); showNotif('Lien copié !'); this.closest('.fixed').remove();" class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
                 Copier le lien
               </button>
             </div>
@@ -551,7 +556,7 @@
         <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
           <div class="flex justify-between items-center mb-6">
             <h3 class="text-xl font-bold text-gray-900">Nouvelle intervention</h3>
-            <button onclick="this.closest('div').parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+            <button onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600">
               <span class="text-2xl">×</span>
             </button>
           </div>
@@ -560,7 +565,7 @@
             <input type="time" id="modal-time" class="w-full px-4 py-2 border rounded-lg">
             <input type="text" id="modal-lieu" placeholder="Lieu" class="w-full px-4 py-2 border rounded-lg">
             <div class="flex gap-3">
-              <button onclick="this.closest('div').parentElement.parentElement.remove()" class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">Annuler</button>
+              <button onclick="closeAllModals()" class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">Annuler</button>
               <button onclick="saveIntervention(this)" class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Ajouter</button>
             </div>
           </div>
@@ -596,7 +601,13 @@
         };
 
         saveInterventions();
-        btn.closest("div").parentElement.parentElement.remove();
+        
+        // Fermeture de TOUTES les modales
+        closeAllModals();
+        
+        // Redirection automatique vers l'intervention créée
+        state.expandedIntervention = id;
+        
         showNotif("Intervention créée !");
         render();
       }
